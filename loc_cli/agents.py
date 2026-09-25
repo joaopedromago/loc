@@ -92,9 +92,12 @@ def configuration(profile: Profile, base: str, directory: Path, executable: str,
     validate_args(profile.agent, args)
     directory.mkdir(parents=True, exist_ok=True, mode=0o700)
     env = clean_env()
-    model = profile.resolved_model or profile.model
+    # The gateway maps this public name to the pinned runtime configuration alias.
+    model = profile.model
+    agent_name = {"claude": "Claude Code", "opencode": "OpenCode", "aider": "Aider"}[profile.agent]
+    identity = f"Inference model: {model} (local Ollama). {agent_name} is the coding-agent application. Use this model identifier when asked which model is running. "
     instructions = directory / "instructions.md"
-    instructions.write_text(GUIDANCE + (" Prefer installed RTK for supported noisy shell commands; preserve original output when needed." if profile.rtk else "") + "\n")
+    instructions.write_text(identity + GUIDANCE + (" Prefer installed RTK for supported noisy shell commands; preserve original output when needed." if profile.rtk else "") + "\n")
     if profile.agent == "claude":
         if major != 2:
             raise LocError("This loc release supports Claude Code 2.x; inspect compatibility before using another major version.")
@@ -223,7 +226,7 @@ def run_profile(store: Store, profile: Profile, args: list[str], *, dry_run: boo
     if dry_run:
         validate_args(profile.agent, args)
         return {"action": "launch preview", "agent": profile.agent, "version": version, "executable": installed.path,
-                "model": profile.resolved_model, "runtime": profile.endpoint, "context": profile.context,
+                "model": profile.model, "resolved_model": profile.resolved_model, "runtime": profile.endpoint, "context": profile.context,
                 "forwarded_arguments": args, "network": "local inference; agent tools may use the network"}
     with session(store, profile), tempfile.TemporaryDirectory(prefix="loc-session-") as temp:
         directory = Path(temp).resolve()
@@ -254,7 +257,7 @@ def run_profile(store: Store, profile: Profile, args: list[str], *, dry_run: boo
                 return {"status": "failed", "reason": "Verification timed out", "elapsed_seconds": round(time.monotonic() - started, 2)}
             except KeyboardInterrupt:
                 return {"exit_code": 130}
-            evidence = {"agent": profile.agent, "version": version, "model": profile.resolved_model,
+            evidence = {"agent": profile.agent, "version": version, "model": profile.model, "resolved_model": profile.resolved_model,
                         "exit_code": result.returncode, "inference_requests": gateway.requests,
                         "gateway_errors": gateway.errors, "elapsed_seconds": round(time.monotonic() - started, 2),
                         "tokens": None, "peak_memory_bytes": None}

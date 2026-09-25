@@ -11,16 +11,51 @@ from .core import LocError, Profile, model_name
 from .ollama import Ollama
 
 
+def public_model_metadata(value, internal: str, public: str):
+    """Translate protocol metadata only; never replace model names in generated content."""
+    if not isinstance(value, dict):
+        return value
+    value = dict(value)
+    if value.get("model") == internal:
+        value["model"] = public
+    if value.get("type") == "message_start" and isinstance(value.get("message"), dict):
+        value["message"] = public_model_metadata(value["message"], internal, public)
+    return value
+
+
+def public_stream_line(line: bytes, content_type: str, internal: str, public: str) -> bytes:
+    prefix = b""
+    payload = line
+    if content_type == "text/event-stream":
+        if not line.startswith(b"data:"):
+            return line
+        prefix, payload = b"data: ", line[5:]
+    try:
+        value = json.loads(payload)
+    except (ValueError, UnicodeDecodeError):
+        # Preserve SSE control lines, [DONE], and unknown events.
+        return line
+    translated = public_model_metadata(value, internal, public)
+    if translated == value:
+        return line
+    ending = b"\r\n" if line.endswith(b"\r\n") else b"\n" if line.endswith(b"\n") else b""
+    return prefix + json.dumps(translated, ensure_ascii=False).encode() + ending
+
+
 class Gateway:
     def __init__(self, runtime: Ollama, profile: Profile, port: int = 0):
         self.runtime, self.profile = runtime, profile
         self.model = profile.resolved_model or profile.model
+        self.public_model = profile.model
         self.item, self.info = runtime.local_model(self.model)
         if profile.digest and self.item["digest"] != profile.digest:
             raise LocError("The selected model digest changed. Inspect 'loc doctor' before running or updating.")
         self.requests = 0
         self.errors = 0
         outer = self
+
+        def public_item(item):
+            return {**item, "name": outer.public_model, "model": outer.public_model}
 
         class Handler(BaseHTTPRequestHandler):
             def log_message(self, *_):
@@ -37,13 +72,13 @@ class Gateway:
             def do_GET(self):
                 route = urlsplit(self.path).path
                 if route == "/api/tags":
-                    self.send_json({"models": [outer.item]})
+                    self.send_json({"models": [public_item(outer.item)]})
                 elif route == "/v1/models":
-                    self.send_json({"object": "list", "data": [{"id": outer.model, "object": "model", "owned_by": "local"}]})
+                    self.send_json({"object": "list", "data": [{"id": outer.public_model, "object": "model", "owned_by": "local"}]})
                 elif route == "/api/version":
                     self.send_json({"version": outer.runtime.version()})
                 elif route == "/api/ps":
-                    self.send_json({"models": [m for m in outer.runtime.loaded() if m.get("name") == outer.model]})
+                    self.send_json({"models": [public_item(m) for m in outer.runtime.loaded() if m.get("name") == outer.model]})
                 else:
                     self.send_json({"error": "This local gateway only exposes model inference."}, 403)
 
@@ -57,7 +92,7 @@ class Gateway:
                     if size <= 0 or size > 16 * 1024 * 1024:
                         raise LocError("Invalid request size.")
                     body = json.loads(self.rfile.read(size))
-                    if not isinstance(body, dict) or model_name(body.get("model", body.get("name", ""))) != outer.model:
+                    if not isinstance(body, dict) or model_name(body.get("model", body.get("name", ""))) != outer.public_model:
                         raise LocError("The requested model differs from the selected local profile.")
                     if route == "/api/show":
                         self.send_json(outer.info)
@@ -66,6 +101,8 @@ class Gateway:
                     actual, _ = outer.runtime.local_model(outer.model)
                     if actual["digest"] != outer.item["digest"]:
                         raise LocError("Model changed during this session; start a new verified session.")
+                    body["model"] = outer.model
+                    body.pop("name", None)
                     if route in {"/api/chat", "/api/generate"}:
                         body["options"] = {**body.get("options", {}), "num_ctx": outer.profile.context,
                                            "num_predict": outer.profile.output_tokens, "temperature": outer.profile.temperature}
@@ -74,13 +111,23 @@ class Gateway:
                         body["temperature"] = outer.profile.temperature
                     outer.requests += 1
                     with outer.runtime.open(route, body, timeout=600) as upstream:
+                        content_type = upstream.headers.get("Content-Type", "application/json").split(";", 1)[0].strip().lower()
+                        if content_type == "application/json":
+                            value = public_model_metadata(json.load(upstream), outer.model, outer.public_model)
+                            self.send_json(value, upstream.status)
+                            return
                         self.send_response(upstream.status)
                         self.send_header("Content-Type", upstream.headers.get("Content-Type", "application/json"))
                         self.send_header("Connection", "close")
                         self.end_headers()
-                        while chunk := upstream.read1(8192):
-                            self.wfile.write(chunk)
-                            self.wfile.flush()
+                        if content_type in {"text/event-stream", "application/x-ndjson", "application/ndjson"}:
+                            while line := upstream.readline():
+                                self.wfile.write(public_stream_line(line, content_type, outer.model, outer.public_model))
+                                self.wfile.flush()
+                        else:
+                            while chunk := upstream.read1(8192):
+                                self.wfile.write(chunk)
+                                self.wfile.flush()
                 except (LocError, ValueError, TypeError) as exc:
                     outer.errors += 1
                     self.send_json({"error": str(exc) if isinstance(exc, LocError) else "Invalid inference request."}, 400)

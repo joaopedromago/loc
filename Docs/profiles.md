@@ -6,6 +6,8 @@ State: implemented
 
 Profiles store an agent, Ollama source model, context/output/map budgets, temperature, supported sampling parameters, local endpoint, resolved model reference, and model digests. Several profiles may reuse the same agents and model layers.
 
+The source `model` is the name shown to agents. The `resolved_model` is the internal configuration alias used for inference and retained in diagnostic output. Displaying the source name does not change which pinned weights or profile settings serve the request.
+
 Supported agents are `claude`, `opencode`, and `aider`. The recommended pairing is Claude Code with a local Qwen Coder model, selected to fit the machine. New profiles default to `claude`; existing profiles keep their agent/model. OpenCode + Qwen3.8 and Claude Code + GLM remain supported alternatives; use exact installed or upstream model tags. Qwen3-Coder-Next below is an example for sufficient memory, not a fixed default on every machine.
 
 ```sh

@@ -28,108 +28,135 @@ COMMANDS = ["setup", "scan", "models", "profiles", "profile", "use", "run", "doc
 
 
 def parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="loc", description="Set up, launch, and maintain local coding-agent profiles.")
-    p.add_argument("--version", action="version", version="loc " + __version__)
-    p.add_argument("--home", type=Path, help="Override the loc state directory (also LOC_HOME).")
-    p.add_argument("--json", action="store_true", help="Print structured JSON.")
-    subs = p.add_subparsers(dest="command", required=True)
+    p = argparse.ArgumentParser(prog="loc", description="Set up and run local coding agents.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="Examples:\n  loc setup daily\n  loc run daily\n  loc run --help\n\nUse --home PATH before the command, or set LOC_HOME.")
+    p.add_argument("--version", action="version", version="loc " + __version__, help="Show the loc version and exit.")
+    p.add_argument("--home", type=Path, metavar="PATH", help="Folder for loc state (also LOC_HOME).")
+    p.add_argument("--json", action="store_true", help="Print results as JSON.")
+    subs = p.add_subparsers(dest="command", required=True, title="commands", metavar="COMMAND",
+                           help="Run 'loc COMMAND --help' for details.")
 
-    def command(key, help):
-        sub = subs.add_parser(key, help=help)
-        sub.add_argument("--json", action="store_true", default=argparse.SUPPRESS)
+    def command(key, description, example, *, actions=None, note=None):
+        footer = []
+        if actions:
+            width = max(map(len, actions))
+            footer.append("Actions:\n" + "\n".join(f"  {action:<{width}}  {summary}" for action, summary in actions.items()))
+        footer.append("Example:\n  " + example)
+        if note:
+            footer.append(note)
+        sub = subs.add_parser(key, help=description, description=description,
+                              formatter_class=argparse.RawDescriptionHelpFormatter, epilog="\n\n".join(footer))
+        sub.add_argument("--json", action="store_true", default=argparse.SUPPRESS, help="Print results as JSON.")
         return sub
 
     def mutation(sub):
-        sub.add_argument("--dry-run", action="store_true", help="Preview without changing the environment.")
-        sub.add_argument("--yes", action="store_true", help="Apply the explicitly selected operation without a prompt.")
+        sub.add_argument("--dry-run", action="store_true", help="Preview changes without applying them.")
+        sub.add_argument("--yes", action="store_true", help="Skip confirmation for the selected changes.")
 
     def runtime_address(sub):
-        sub.add_argument("--endpoint", default="http://127.0.0.1:11434")
+        sub.add_argument("--endpoint", default="http://127.0.0.1:11434", metavar="URL",
+                         help="Local Ollama URL (default: %(default)s).")
 
-    setup = command("setup", "Create or resume a local coding profile.")
-    setup.add_argument("name", nargs="?")
-    setup.add_argument("--agent", choices=["claude", "opencode", "aider"], help="Agent for a new profile (default: claude); existing profiles keep their agent.")
-    setup.add_argument("--model")
-    setup.add_argument("--context", type=int)
-    setup.add_argument("--output-tokens", type=int)
-    setup.add_argument("--map-tokens", type=int)
-    setup.add_argument("--temperature", type=float)
-    setup.add_argument("--rtk", action="store_true", default=None)
-    setup.add_argument("--resume", action="store_true")
-    setup.add_argument("--offline", action="store_true")
-    setup.add_argument("--accept-model-change", action="store_true")
+    setup = command("setup", "Create or finish a coding profile.", "loc setup daily --model qwen3-coder:30b",
+                    note="A profile pairs an agent with a local model. Existing profiles keep their\nsaved settings. Use a new name to choose different settings.")
+    setup.add_argument("name", nargs="?", help="Profile name; asks if omitted in a terminal.")
+    setup.add_argument("--agent", choices=["claude", "opencode", "aider"], help="Agent for new profiles (default: claude).")
+    setup.add_argument("--model", help="Exact Ollama model tag, e.g. qwen3-coder:30b.")
+    setup.add_argument("--context", type=int, metavar="TOKENS", help="Context size in tokens (new profile: 32768).")
+    setup.add_argument("--output-tokens", type=int, metavar="TOKENS", help="Max reply tokens (new profile: 4096).")
+    setup.add_argument("--map-tokens", type=int, metavar="TOKENS", help="Code-map budget for Aider (new profile: 1024).")
+    setup.add_argument("--temperature", type=float, metavar="NUMBER", help="Randomness, 0 to 2 (new profile: 0.2).")
+    setup.add_argument("--rtk", action="store_true", default=None, help="Add RTK guidance; install RTK if missing.")
+    setup.add_argument("--resume", action="store_true", help="Continue a saved setup.")
+    setup.add_argument("--offline", action="store_true", help="Use only installed tools and models.")
+    setup.add_argument("--accept-model-change", action="store_true", help="Accept a changed model when setting up an import.")
     mutation(setup)
     runtime_address(setup)
-    command("scan", "Discover installed components and hardware.")
-    models = command("models", "List installed models or recommend a configuration.")
-    models.add_argument("action", choices=["list", "recommend", "catalog", "refresh"], nargs="?", default="list")
-    models.add_argument("--agent", choices=["claude", "opencode", "aider"], default=DEFAULT_AGENT)
-    models.add_argument("--context", type=int, default=32768)
-    models.add_argument("--preference", choices=["balanced", "speed", "quality"], default="balanced")
-    models.add_argument("--offline", action="store_true")
+    command("scan", "Find installed tools and check your hardware.", "loc scan")
+    models = command("models", "List models or find one for your machine.", "loc models recommend --agent claude", actions={
+        "list": "Show installed models (default).", "recommend": "Suggest models that fit your machine.",
+        "catalog": "Show the saved model catalog.", "refresh": "Fetch catalog updates; needs internet."})
+    models.add_argument("action", choices=["list", "recommend", "catalog", "refresh"], nargs="?", default="list", help="What to do; see Actions below.")
+    models.add_argument("--name", "-n", dest="names_only", action="store_true", help="For list: print only model names, one per line; --json gives an array.")
+    models.add_argument("--agent", choices=["claude", "opencode", "aider"], default=DEFAULT_AGENT, help="Agent to recommend models for (default: %(default)s).")
+    models.add_argument("--context", type=int, default=32768, metavar="TOKENS", help="Context size for recommendations (default: %(default)s).")
+    models.add_argument("--preference", choices=["balanced", "speed", "quality"], default="balanced", help="What to favor in recommendations (default: %(default)s).")
+    models.add_argument("--offline", action="store_true", help="Use local metadata; do not refresh online.")
     runtime_address(models)
-    command("profiles", "List profiles.")
-    profiles = command("profile", "Manage portable profile definitions.")
-    profiles.add_argument("action", choices=["list", "show", "remove", "export", "import"])
-    profiles.add_argument("target", nargs="?")
-    profiles.add_argument("--file", type=Path)
-    profiles.add_argument("--name", dest="import_name")
+    command("profiles", "List saved profiles and the global default.", "loc profiles")
+    profiles = command("profile", "View, move, or remove saved profiles.", "loc profile export daily --file daily.json", actions={
+        "list": "List saved profiles.", "show": "Show one profile's settings.",
+        "remove": "Remove a profile; keep its tools and models.", "export": "Write portable settings to JSON.",
+        "import": "Read JSON settings; run setup before using them."})
+    profiles.add_argument("action", choices=["list", "show", "remove", "export", "import"], help="What to do; see Actions below.")
+    profiles.add_argument("target", nargs="?", help="Profile name, or a JSON file for import.")
+    profiles.add_argument("--file", type=Path, metavar="PATH", help="JSON file to import or export.")
+    profiles.add_argument("--name", dest="import_name", metavar="NAME", help="Name to give an imported profile.")
     mutation(profiles)
-    use = command("use", "Set a global or repository default.")
-    use.add_argument("name")
-    use.add_argument("--project", action="store_true")
-    run = command("run", "Launch the selected agent with session-scoped settings.")
-    run.add_argument("name", nargs="?")
-    run.add_argument("--dry-run", action="store_true")
-    run.add_argument("--offline", action="store_true")
-    diagnose = command("doctor", "Inspect profiles; optionally verify a real disposable file edit.")
-    diagnose.add_argument("name", nargs="?")
-    diagnose.add_argument("--verify", action="store_true")
-    diagnose.add_argument("--timeout", type=int, default=240)
-    diagnose.add_argument("--report", nargs="?", const="loc-diagnostic-report.json", type=Path)
-    diagnose.add_argument("--offline", action="store_true")
-    stat = command("status", "Inspect runtime state without loading models.")
-    stat.add_argument("name", nargs="?")
+    use = command("use", "Choose the default profile for loc run.", "loc use daily --project")
+    use.add_argument("name", help="Saved profile to use by default.")
+    use.add_argument("--project", action="store_true", help="Set the default for this repository only.")
+    run = command("run", "Start a saved coding profile.", "loc run daily -- --continue",
+                  note="Use a profile name, not a model tag. Create one with loc setup.\nArguments after -- go to the agent. Example: loc run daily -- --help\nWithout a name, use the repository default, then the global default.")
+    run.add_argument("name", nargs="?", help="Saved profile; uses your default if omitted.")
+    run.add_argument("--dry-run", action="store_true", help="Show what would run without starting the agent.")
+    run.add_argument("--offline", action="store_true", help="Block outside network access; macOS Claude/Aider only.")
+    diagnose = command("doctor", "Check profiles and explain setup problems.", "loc doctor daily --verify")
+    diagnose.add_argument("name", nargs="?", help="Profile to check; checks all if omitted.")
+    diagnose.add_argument("--verify", action="store_true", help="Ask the agent to edit a temporary test file.")
+    diagnose.add_argument("--timeout", type=int, default=240, metavar="SECONDS", help="Time limit for the edit test (default: %(default)s).")
+    diagnose.add_argument("--report", nargs="?", const="loc-diagnostic-report.json", type=Path, metavar="PATH", help="Save a local report (default file: loc-diagnostic-report.json).")
+    diagnose.add_argument("--offline", action="store_true", help="Run the edit test offline; macOS Claude/Aider only.")
+    stat = command("status", "Show profiles, running models, and runtime health.", "loc status daily")
+    stat.add_argument("name", nargs="?", help="Profile to inspect; shows all if omitted.")
     runtime_address(stat)
-    update = command("update", "Check or update a profile's source model; retain rollback references.")
-    update.add_argument("name", nargs="?")
-    update.add_argument("--check", action="store_true")
-    update.add_argument("--offline", action="store_true")
-    update.add_argument("--component", choices=["ollama", "claude", "opencode", "aider", "rtk", "llmfit"])
+    update = command("update", "Update a profile's model or an installed tool.", "loc update daily --check",
+                     note="Choose a profile or --component, not both. For loc itself, use loc self update.")
+    update.add_argument("name", nargs="?", help="Profile to update; uses your default if omitted.")
+    update.add_argument("--check", action="store_true", help="Check for updates without applying them.")
+    update.add_argument("--offline", action="store_true", help="Refuse network updates; leave installed versions in place.")
+    update.add_argument("--component", choices=["ollama", "claude", "opencode", "aider", "rtk", "llmfit"], help="Update this tool instead of a profile's model.")
     mutation(update)
-    rollback = command("rollback", "Restore a retained model/profile configuration.")
-    rollback.add_argument("name")
-    rollback.add_argument("--yes", action="store_true")
-    install = command("install", "Install a missing supported component or reuse the existing one.")
-    install.add_argument("component", choices=[x for x in TECHNOLOGIES if x != "loc"])
-    install.add_argument("--offline", action="store_true")
+    rollback = command("rollback", "Restore a profile's saved model configuration.", "loc rollback daily")
+    rollback.add_argument("name", help="Profile with a saved rollback entry.")
+    rollback.add_argument("--yes", action="store_true", help="Restore without asking for confirmation.")
+    install = command("install", "Install a missing tool, or reuse it if present.", "loc install ollama --dry-run")
+    install.add_argument("component", choices=[x for x in TECHNOLOGIES if x != "loc"], help="Tool to install or reuse; unsupported routes give instructions.")
+    install.add_argument("--offline", action="store_true", help="Reuse installed tools only; do not download anything.")
     mutation(install)
-    uninstall = command("uninstall", "Remove an explicitly selected component or model.")
-    uninstall.add_argument("kind", choices=["agent", "runtime", "helper", "model"])
-    uninstall.add_argument("target")
-    uninstall.add_argument("--detach", action="store_true", help="Disable affected profiles and discard affected rollback references.")
+    uninstall = command("uninstall", "Remove one chosen tool or model.", "loc uninstall model qwen3-coder:30b --dry-run",
+                        note="Removal is blocked while the target is in use. Use loc self uninstall\nto remove loc itself.")
+    uninstall.add_argument("kind", choices=["agent", "runtime", "helper", "model"], help="Type of item to remove.")
+    uninstall.add_argument("target", help="Tool name or exact model tag to remove.")
+    uninstall.add_argument("--detach", action="store_true", help="Disable linked profiles and drop their rollback entries.")
     mutation(uninstall)
     runtime_address(uninstall)
-    register = command("register", "Select an existing executable, including a custom installation location.")
-    register.add_argument("component", choices=list(TECHNOLOGIES))
-    register.add_argument("path", type=Path)
-    storage = command("storage", "Show model ownership, references, and storage estimates.")
+    register = command("register", "Tell loc which installed executable to use.", "loc register ollama /path/to/ollama")
+    register.add_argument("component", choices=list(TECHNOLOGIES), help="Installed tool to select.")
+    register.add_argument("path", type=Path, help="Path to its existing executable; installs nothing.")
+    storage = command("storage", "Show model sizes, shared storage, and profile links.", "loc storage")
     runtime_address(storage)
-    clean = command("clean", "Preview or remove unused model references created by loc.")
+    clean = command("clean", "Find unused model references created by loc.", "loc clean --apply",
+                    note="Previews by default. Shared models and models still in use are kept.")
     mutation(clean)
-    clean.add_argument("--apply", action="store_true", help="Apply cleanup; previews are the default.")
+    clean.add_argument("--apply", action="store_true", help="Remove the eligible unused references.")
     runtime_address(clean)
-    runtime = command("runtime", "Start or inspect the existing Ollama runtime.")
-    runtime.add_argument("action", choices=["start", "status"])
+    runtime = command("runtime", "Start or check the local Ollama service.", "loc runtime start", actions={
+        "start": "Start the installed service, or reuse it if running.", "status": "Check the service version and address."})
+    runtime.add_argument("action", choices=["start", "status"], help="What to do; see Actions below.")
     runtime_address(runtime)
-    manager = command("self", "Inspect, update, or uninstall loc through its original owner.")
-    manager.add_argument("action", choices=["info", "update", "uninstall"])
-    manager.add_argument("--check", action="store_true")
-    manager.add_argument("--offline", action="store_true")
+    manager = command("self", "Manage the loc installation itself.", "loc self update --check", actions={
+        "info": "Show the version, path, and installation manager.", "update": "Install a newer GitHub release through the same manager.",
+        "uninstall": "Remove loc; keep profiles, tools, and models."})
+    manager.add_argument("action", choices=["info", "update", "uninstall"], help="What to do; see Actions below.")
+    manager.add_argument("--check", action="store_true", help="For update: check without applying changes.")
+    manager.add_argument("--offline", action="store_true", help="Block self-update; keep the installed version.")
     mutation(manager)
-    complete = command("completion", "Print a shell completion script.")
-    complete.add_argument("shell", choices=["bash", "zsh", "fish", "powershell"])
-    hidden = command("_complete", "Internal shell completion candidates.")
+    complete = command("completion", "Print a script for shell tab completion.", "loc completion zsh",
+                       note="Load the output through your shell's completion setup. Shell files are not edited.")
+    complete.add_argument("shell", choices=["bash", "zsh", "fish", "powershell"], help="Shell that will use the completion script.")
+    command("_complete", "List completion words for shell scripts.", "loc _complete")
     return p
 
 
@@ -187,7 +214,7 @@ def dispatch(args, forwarded: list[str], store: Store):
     command = args.command
     life = Lifecycle(store)
     if command == "_complete":
-        return "\n".join(COMMANDS + sorted(store.read()["profiles"]) + ["--help", "--json", "--dry-run", "--offline", "--yes"])
+        return "\n".join(COMMANDS + sorted(store.read()["profiles"]) + ["-h", "--help", "--json", "--dry-run", "--offline", "--yes", "--name", "-n"])
     if command == "completion":
         return completion(args.shell)
     if command == "scan":
@@ -271,6 +298,8 @@ def dispatch(args, forwarded: list[str], store: Store):
             if args.action != "recommend":
                 raise
             models = []
+        if args.names_only:
+            return [model["name"] for model in models]
         return {"models": models} if args.action == "list" else recommend(store, args.agent, models, args.context, args.preference)
     if command == "doctor":
         if args.timeout < 1:
@@ -327,10 +356,13 @@ def main(argv: list[str] | None = None) -> int:
         index = argv.index("--")
         argv, forwarded = argv[:index], argv[index + 1:]
     args = parser().parse_args(argv)
+    names_only = args.command == "models" and args.names_only
     store = Store(args.home)
     try:
         if forwarded and args.command != "run":
             raise LocError("Arguments after -- are supported only by loc run.")
+        if names_only and args.action != "list":
+            raise LocError("--name/-n is only supported by loc models list (the default action).")
         mutating = args.command in {"setup", "profile", "use", "update", "rollback", "install", "uninstall", "register", "clean", "runtime", "self"}
         readonly = getattr(args, "dry_run", False) or getattr(args, "check", False)
         if args.command == "profile" and args.action in {"list", "show", "export"}:
@@ -348,6 +380,9 @@ def main(argv: list[str] | None = None) -> int:
             print(result)
         elif args.json:
             print(json.dumps(result, indent=2, ensure_ascii=False))
+        elif names_only:
+            for model in result:
+                print(model)
         else:
             render(result)
         if isinstance(result, dict):

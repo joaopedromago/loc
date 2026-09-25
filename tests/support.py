@@ -14,6 +14,7 @@ class RuntimeFixture:
         self.operations = []
         self.loaded = []
         self.fail_pull = False
+        self.inference_response = None
         self.version = "0.34.3"
         self.add("qwen3:4b")
         fixture = self
@@ -61,9 +62,19 @@ class RuntimeFixture:
                     source, target = data["source"], data["destination"]
                     fixture.add(target, digest=fixture.inventory[source]["digest"])
                     self.respond({})
-                elif self.path in {"/api/chat", "/v1/messages", "/v1/chat/completions"}:
+                elif self.path in {"/api/chat", "/api/generate", "/v1/messages", "/v1/chat/completions", "/v1/completions"}:
                     fixture.operations.append(("inference", data))
-                    self.respond({"message": {"role": "assistant", "content": "ok"}, "done": True})
+                    if fixture.inference_response:
+                        content_type, body = fixture.inference_response
+                        self.send_response(200)
+                        self.send_header("Content-Type", content_type)
+                        self.send_header("Content-Length", str(len(body)))
+                        self.end_headers()
+                        for start in range(0, len(body), 7):
+                            self.wfile.write(body[start:start + 7])
+                            self.wfile.flush()
+                    else:
+                        self.respond({"model": model, "message": {"role": "assistant", "content": "ok"}, "done": True})
                 else:
                     self.respond({}, 404)
 

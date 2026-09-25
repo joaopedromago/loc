@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="320" viewBox="0 0 240 120" role="img" aria-labelledby="title desc">
+  <title id="title">loc</title>
+  <desc id="desc">A lowercase loc wordmark drawn with thin geometric strokes, in white on black.</desc>
+  <rect width="240" height="120" fill="#0a0a0a"/>
+  <g fill="none" stroke="#f5f5f0" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 54 26 V 94"/>
+    <circle cx="104" cy="71" r="23"/>
+    <path d="M 185.263 54.737 A 23 23 0 1 0 185.263 87.263"/>
+  </g>
+</svg>

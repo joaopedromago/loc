@@ -49,7 +49,7 @@ def doctor(store: Store, selected: str | None, *, verify: bool = False, timeout:
             item, info = runtime.local_model(profile.resolved_model or profile.model)
             same = item["digest"] == profile.digest and profile.state == "ready"
             row["checks"].append({"check": "model identity", "status": "passed" if same else "failed",
-                                  "expected": profile.digest, "observed": item["digest"], "model": item["name"]})
+                                  "expected": profile.digest, "observed": item["digest"], "model": profile.model, "resolved_model": item["name"]})
             params = parameters(info)
             row["checks"].append({"check": "configured context", "status": "passed" if params.get("num_ctx") == profile.context else "failed", "tokens": profile.context})
             if verify and same:

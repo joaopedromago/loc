@@ -6,12 +6,16 @@ State: partially implemented
 
 ```sh
 loc models list
+loc models --name
+loc models -n
 loc models recommend
 loc models recommend --agent opencode --preference balanced
 loc models recommend --agent aider --preference speed --context 16384
 loc models catalog
 loc models refresh
 ```
+
+`loc models --name` and `loc models -n` list only installed model names, one per line, with their exact tags. Both also work with the explicit `list` action. They preserve inventory order and include runtime aliases. An empty inventory prints nothing; adding `--json` returns an array of names. These flags apply only to `list`; other actions reject them before performing work.
 
 Hardware inspection reports OS/architecture, CPU count, memory capacity/availability, disk space, Apple Silicon shared memory, and NVIDIA information when `nvidia-smi` is already available. It does not install a hardware helper merely to inspect the machine.
 

@@ -39,9 +39,17 @@ python3 -m loc_cli --help
 
 The tests cover actual local HTTP fixtures, duplicate prevention, ambiguous/broken installations, state corruption, competing processes, dry runs, interrupted downloads, profile portability, model identity drift, network restrictions, shared-resource cleanup, failed updates, rollback, and release checksums. Installer and destructive component actions use fixtures. They do not uninstall the developer's existing AI environment.
 
-The complete suite passed 112 tests on both installed Python 3.14 and Python 3.12. Documentation state/link checks and `git diff --check` also passed.
+The complete suite passed 123 tests on both installed Python 3.14 and Python 3.12. Documentation state/link checks and `git diff --check` also passed.
+
+CLI help was checked with both `-h` and `--help` across 43 command/action forms (86 calls) on Python 3.12 and 3.14. Every command has a short purpose, described arguments/options, and an example. Both flags produce matching output and exit successfully before accessing state or dispatching an operation. The regression suite also passed after the help update.
+
+Names-only model listing passed 23 CLI checks for `--name`/`-n`, implicit/explicit `list`, exact output, empty inventories, JSON, custom endpoints, runtime errors, and rejection of other actions without dispatch or state creation. All 123 regression tests passed on Python 3.14 after this change. The existing pipx installation was updated and both flags were checked against all 10 models in the Mac's live Ollama inventory; saved profiles and inventory remained unchanged.
 
 Recommendation regressions cover the user-selected Claude Code + local Qwen Coder default, memory limits, installed custom aliases, unreadable/hosted metadata, interactive selection, and preservation of existing agent/model choices. A read-only CLI check on the Mac selected an existing Qwen Coder alias for Claude and left the model inventory and profile state unchanged.
+
+Model-identity regressions verify that agents and API metadata use the original model name while inference remains pinned to the internal configuration alias. They cover all agent adapters, JSON responses, Anthropic/OpenAI event streams, native Ollama streaming, unchanged generated text/tool arguments, and digest/selection restrictions.
+
+The fix was applied to the existing pipx-managed loc installation and checked against the tested source. A fresh Claude Code session using the existing daily profile answered the model-identity question with `qwen3.8-coder-q8-64k:latest`; its model-usage metadata used the same original tag. This exercised one inference request with zero gateway errors. Saved profiles, `.zshrc`, and the complete model-name/digest inventory were unchanged. Existing sessions require restart to receive the new configuration.
 
 GitHub Actions defines a Python 3.11/3.14 matrix across macOS, Windows, and Linux. A workflow file is not evidence that hosted jobs have run. No workflow has been dispatched or release published during this implementation.
 

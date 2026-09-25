@@ -1,4 +1,5 @@
 include AGENTS.md
+recursive-include assets *.svg *.png
 recursive-include Docs *.md
 recursive-include scripts *.py *.sh *.ps1
 recursive-include tests *.py
