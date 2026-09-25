@@ -17,7 +17,7 @@ loc profile show claude-next
 loc use claude-next
 loc use claude-next --project
 loc run
-loc run claude-next -- --continue
+loc run claude-next --continue
 ```
 
 Explicit profile selection takes precedence over the nearest repository `.loc.json`, then the user-wide default. Repository discovery stops at a Git boundary. `.loc.json` accepts only a schema version and an existing profile name; it cannot contain executable instructions. Changing one repository default does not change others.

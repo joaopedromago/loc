@@ -12,7 +12,7 @@ loc setup daily --model qwen3-coder:30b
 loc setup daily --resume
 loc runtime start
 loc run daily
-loc run daily -- --continue
+loc run daily --continue
 ```
 
 New profiles default to Claude Code with local Ollama. Interactive setup asks for a profile and agent, then offers a fitting Qwen Coder model as the recommended choice. Model recommendations use the requested context and verified installed-model metadata. If no compatible Qwen Coder candidate has a positive memory-fit estimate, the model choice remains explicit. The example tag above is not suitable for every machine.
@@ -43,7 +43,9 @@ Agents receive the profile's original model tag, such as `qwen3-coder:30b`, in t
 
 Launch previews and verification results show the original name as `model` and retain the internal alias as `resolved_model` for diagnostics. Existing profiles need no migration or new model download. A running agent session must be restarted to receive updated configuration; old conversation messages may still contain the former alias.
 
-Arguments after `--` go to the agent. Normal launches preserve the agent's permission model. The verification command allows the narrow disposable editing task described in [Diagnostics and recovery](diagnostics-and-recovery.md).
+Agent options can follow `loc run` directly, with or without a profile name: `loc run --dangerously-skip-permissions`, `loc run daily --continue`, and `loc run --effort low` all forward their agent options. The optional positional argument remains a profile name, not a raw model tag. Put it and loc's `--dry-run`, `--offline`, `--json`, `-h`, or `--help` before agent options. Once the first unknown option is encountered, it and every subsequent argument pass through unchanged, so agent option values cannot be mistaken for profiles or loc settings. A positional argument after the profile also starts forwarding.
+
+The explicit `--` separator remains supported and resolves option-name collisions: `loc run daily -- --help` asks the agent for help. Forwarding is specific to `run`; other commands still reject unknown options. Existing model/provider override checks apply to both forms. User-supplied permission options reach the agent, but loc does not enable permission bypasses by default or write them into persistent settings. The verification command allows the narrow disposable editing task described in [Diagnostics and recovery](diagnostics-and-recovery.md).
 
 A profile that is pending, disabled, missing a dependency, or pointing to a changed model cannot launch as ready. Optional `--rtk` requests helper reuse/installation and concise guidance; it does not globally install hooks.
 

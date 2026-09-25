@@ -133,6 +133,25 @@ The 30B tag is an example, not a requirement for every machine. Check its memory
 
 Create a new profile name when changing an existing profile's settings. Setup preserves an existing profile instead of silently replacing it.
 
+### Prefer quick responses
+
+For a small model that answers without a separate thinking phase, use the explicit Instruct tag:
+
+```sh
+loc setup fast-instruct --agent claude --model qwen3:4b-instruct
+loc run fast-instruct
+```
+
+The `qwen3:4b` tag inspected during local testing contained Qwen3-4B-Thinking-2507, which can spend many tokens reasoning even about simple prompts. Claude's `/effort low` does not turn a thinking-only model into a non-thinking one. The Instruct variant uses different weights and may need a download. See [response-time limits](Docs/resource-efficiency.md#quick-responses-and-thinking-models).
+
+To reduce Claude's tool definitions to file reading, editing, writing, shell commands, and file/text search:
+
+```sh
+loc run fast-instruct --tools "Read,Edit,Write,Bash,Glob,Grep"
+```
+
+This limits the tools available in that session; Claude's normal permission checks still apply. Omit `--tools` when you need its full tool set.
+
 ### Switch profiles
 
 ```sh
@@ -154,13 +173,19 @@ Selection order is **explicit profile → repository `.loc.json` → global defa
 
 ### Pass arguments to an agent
 
-Arguments after `--` are forwarded to the selected agent:
+Pass agent options directly, with or without a profile name:
 
 ```sh
-loc run daily -- --continue
+loc run --dangerously-skip-permissions
+loc run daily --continue
+loc run fast-instruct --tools "Read,Edit,Write,Bash,Glob,Grep"
 ```
 
-Agent options that override the configured model or inference destination are rejected. Normal launches retain the agent's permission controls.
+Put the profile name and loc options (`--dry-run`, `--offline`, `--json`, `-h`, `--help`) before agent options. The first option loc does not recognize starts the agent arguments; it and everything following it are forwarded unchanged, including option values. For example, `loc run --effort low` uses your default profile.
+
+The explicit separator still works: `loc run daily -- --help` asks the agent for help, while `loc run --help` shows loc's help. Use `--` when an agent option has the same name as a loc option.
+
+Agent options that override the configured model or inference destination are rejected. Permission options are forwarded only when supplied; for Claude, `--dangerously-skip-permissions` disables its normal permission prompts for that launch.
 
 ### Move a profile between machines
 

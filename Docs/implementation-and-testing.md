@@ -41,6 +41,8 @@ The tests cover actual local HTTP fixtures, duplicate prevention, ambiguous/brok
 
 The complete suite passed 123 tests on both installed Python 3.14 and Python 3.12. Documentation state/link checks and `git diff --check` also passed.
 
+After adding direct agent-argument forwarding to `loc run`, the full suite passed 132 tests on Python 3.14. The nine new forwarding tests also passed on Python 3.12. They cover default/explicit profiles, agent option values and ordering, loc options, explicit separators, help, strict parsing for other commands, model/provider restrictions, and forwarding an explicitly requested Claude permission flag without changing persistent settings.
+
 CLI help was checked with both `-h` and `--help` across 43 command/action forms (86 calls) on Python 3.12 and 3.14. Every command has a short purpose, described arguments/options, and an example. Both flags produce matching output and exit successfully before accessing state or dispatching an operation. The regression suite also passed after the help update.
 
 Names-only model listing passed 23 CLI checks for `--name`/`-n`, implicit/explicit `list`, exact output, empty inventories, JSON, custom endpoints, runtime errors, and rejection of other actions without dispatch or state creation. All 123 regression tests passed on Python 3.14 after this change. The existing pipx installation was updated and both flags were checked against all 10 models in the Mac's live Ollama inventory; saved profiles and inventory remained unchanged.
@@ -60,6 +62,7 @@ The inspected machine has Apple Silicon and 64 GiB of unified memory. Existing O
 Verified with disposable file edits:
 
 - Claude Code with installed Qwen3 4B.
+- Claude Code with Qwen3 4B Instruct: a disposable file edit passed in 4.71 seconds, with three inference requests and zero gateway errors.
 - OpenCode 2 with installed Qwen3 4B.
 - Aider with installed Qwen3 4B.
 - OpenCode 2 with the user's existing Qwen3.8 Q8 64K configuration.
@@ -67,6 +70,8 @@ Verified with disposable file edits:
 - Claude Code with Qwen3 4B inside the macOS offline sandbox.
 
 The network test checks the agent and a child process: the gateway port is reachable; external addresses and unrelated local ports are blocked. Original model digests and `.zshrc` were checked before and after live tests and preserved. Test configuration aliases share existing weight blobs and are tracked in ignored `.tmp/` test state.
+
+For the requested response-time improvement, setup created a separate `fast-instruct` profile and downloaded the missing `qwen3:4b-instruct` weights, reusing the existing Claude and Ollama installations. Existing profiles, the global default, and prior model digests were preserved. [Resource efficiency](resource-efficiency.md#delivery-evidence) records the controlled latency comparison: the non-thinking model with six core coding tools answered the test question in about 5.5 seconds. These isolated results do not guarantee the same timing in an existing repository session.
 
 The package was built and installed into an isolated environment using the existing interpreter. Repeating installation made no changes. Self-uninstallation removed the test package and preserved saved profiles byte-for-byte. Release downloads and installer failures are exercised with fixtures.
 

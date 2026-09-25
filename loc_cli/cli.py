@@ -97,8 +97,8 @@ def parser() -> argparse.ArgumentParser:
     use = command("use", "Choose the default profile for loc run.", "loc use daily --project")
     use.add_argument("name", help="Saved profile to use by default.")
     use.add_argument("--project", action="store_true", help="Set the default for this repository only.")
-    run = command("run", "Start a saved coding profile.", "loc run daily -- --continue",
-                  note="Use a profile name, not a model tag. Create one with loc setup.\nArguments after -- go to the agent. Example: loc run daily -- --help\nWithout a name, use the repository default, then the global default.")
+    run = command("run", "Start a saved coding profile.", "loc run daily --continue",
+                  note="Use a profile name, not a model tag. Create one with loc setup.\nPut the profile and loc options before agent options. The first unknown\noption and everything after it go to the agent unchanged. -- also starts\nagent arguments explicitly. Example: loc run daily -- --help\nWithout a name, use the repository default, then the global default.")
     run.add_argument("name", nargs="?", help="Saved profile; uses your default if omitted.")
     run.add_argument("--dry-run", action="store_true", help="Show what would run without starting the agent.")
     run.add_argument("--offline", action="store_true", help="Block outside network access; macOS Claude/Aider only.")
@@ -349,12 +349,43 @@ def dispatch(args, forwarded: list[str], store: Store):
     raise LocError("Unknown command.")
 
 
-def main(argv: list[str] | None = None) -> int:
-    argv = list(sys.argv[1:] if argv is None else argv)
-    forwarded = []
+def split_agent_args(argv: list[str]) -> tuple[list[str], list[str]]:
+    """Split at run's first agent argument without consuming its option values."""
+    index = 0
+    # Locate the command, excluding global option values that may be named "run".
+    while index < len(argv):
+        token = argv[index]
+        if token in {"--home", "--ho", "--hom"}:
+            index += 2
+            continue
+        if not token.startswith("-") or token == "--":
+            break
+        index += 1
+    if index < len(argv) and argv[index] == "run":
+        index += 1
+        has_profile = False
+        while index < len(argv):
+            token = argv[index]
+            if token == "--":
+                return argv[:index], argv[index + 1:]
+            if token in {"--dry-run", "--offline", "--json", "--help", "-h"}:
+                index += 1
+                continue
+            if not has_profile and not token.startswith("-"):
+                has_profile = True
+                index += 1
+                continue
+            return argv[:index], argv[index:]
+        return argv, []
+    # Other commands retain strict parsing and the existing explicit separator.
     if "--" in argv:
         index = argv.index("--")
-        argv, forwarded = argv[:index], argv[index + 1:]
+        return argv[:index], argv[index + 1:]
+    return argv, []
+
+
+def main(argv: list[str] | None = None) -> int:
+    argv, forwarded = split_agent_args(list(sys.argv[1:] if argv is None else argv))
     args = parser().parse_args(argv)
     names_only = args.command == "models" and args.names_only
     store = Store(args.home)
