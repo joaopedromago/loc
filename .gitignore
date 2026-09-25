@@ -1,0 +1,54 @@
+# State: implemented
+# Repository hygiene only; these patterns do not select an application language.
+
+# Operating system and editor artifacts
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Local credentials and environment files
+.env
+.env.*
+!.env.example
+!.env.*.example
+.secrets/
+
+# Local logs and temporary files
+*.log
+*.tmp
+*.bak
+.cache/
+.tmp/
+
+# Python environments and generated artifacts, if Python is selected
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+
+# Downloaded dependencies and build outputs
+node_modules/
+build/
+dist/
+
+# Local application state and model downloads
+.loc/
+models/
+*.gguf
+*.ggml
+*.safetensors
