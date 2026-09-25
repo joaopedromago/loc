@@ -8,12 +8,15 @@ Use simple CLI commands to set up local coding-agent environments and start the 
 
 Setup should also configure efficient local operation, reducing unnecessary context and tokens while preserving coding quality on machines with limited memory. Specific proposals and their limits live in [Resource efficiency](resource-efficiency.md).
 
+Resumable setup, download and disk estimates, optional dry runs, complete profile verification, runtime status, and diagnostic reports are now confirmed scope. See [Diagnostics and recovery](diagnostics-and-recovery.md). Launch behavior must also respect [Local inference and offline operation](local-and-offline.md) and repository defaults described in [Profiles](profiles.md).
+
 ## Confirmed installation requirements
 
+- Automatically identify existing installations for every supported technology and reuse them. Never reinstall an existing component during setup or create a duplicate. See [Dependency detection and reuse](dependency-reuse.md).
 - Setup should obtain the required tools and selected models, rather than assume the user has already installed everything.
-- Install coding agents, runtimes, and their required dependencies through the CLI where supported.
-- Download the selected model through the supported runtime or model download mechanism. For example, an Ollama and Qwen profile needs both the runtime installation and the chosen Qwen model artifact.
-- When a component supports manual installation but has no supported CLI installation route, open its official installation or download page in the user's browser.
+- Install only components established to be absent, using the CLI where supported. Uncertain detection must leave installation pending rather than treating the component as missing.
+- Obtain the selected model through the supported runtime or model download mechanism, reusing an existing compatible artifact without downloading another copy. For example, an Ollama and Qwen profile needs access to both the runtime installation and the chosen Qwen model artifact.
+- When an absent component supports manual installation but has no supported CLI installation route, open its official installation or download page in the user's browser.
 - Keep setup pending while the user follows the installation instructions. Wait for explicit confirmation that the installation is complete before continuing with dependent setup steps.
 
 The browser fallback is part of the setup experience, not a separate task the user must discover independently. It does not imply support for a component that cannot run on the user's platform.
@@ -34,8 +37,7 @@ The browser fallback is part of the setup experience, not a separate task the us
 - Offer suitable model recommendations while allowing an explicit compatible selection.
 - Offer compatible context and memory settings, explaining their tradeoffs and any shared-runtime effects.
 - Explain required installations, configuration changes, and model downloads.
-- Reuse compatible dependencies and downloaded models.
-- Repeating setup should not duplicate installations or overwrite unrelated configuration.
+- Preserve unrelated configuration while applying the required installation and model reuse rules.
 - Provide a clear explanation when an installation or hardware combination is unsupported.
 
 ## Proposed launch behavior for review

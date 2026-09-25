@@ -6,6 +6,12 @@ State: not implemented
 
 Maintain local coding-agent setups and update models when needed through simple commands.
 
+Users must also be able to install and update loc itself easily. Its proposed distribution and self-update behavior is documented separately in [Installing and updating loc](distribution-and-updates.md).
+
+The [no-duplicate installation requirement](dependency-reuse.md) also governs maintenance. A deliberate update must target the existing installation rather than add a second distribution. Retaining different model versions for rollback is distinct from copying an identical artifact for each profile.
+
+Storage visibility, ownership-aware cleanup, and explicit uninstallation are confirmed scope and are defined in [Uninstallation and storage](uninstall-and-storage.md). Update recovery and verification should align with [Diagnostics and recovery](diagnostics-and-recovery.md).
+
 ## Proposed behavior for review
 
 - Report available changes before changing a working profile.
@@ -34,7 +40,7 @@ loc rollback claude-next
 - Recording an old artifact identifier does not guarantee rollback unless the artifact remains available.
 - Shared model and runtime changes must account for dependent profiles and active sessions.
 - Automatic deletion of models or replacement of active configurations is not an approved default.
-- Scheduled updates, agent/runtime installation ownership, retention policy, update checks, and cleanup behavior remain undecided.
+- Scheduled updates, ownership detection mechanisms, retention policy, and update-check behavior remain undecided. Ownership tracking and controlled cleanup are confirmed capabilities; their detailed commands and mechanisms remain open.
 - Exact version-pinning and rollback mechanisms depend on the selected runtime and remain undecided.
 
 ## Delivery evidence

@@ -69,7 +69,7 @@ Label estimates and unavailable measurements explicitly. Account for retrieval, 
 - Repository maps, retrieval, compaction, and filtering can omit important information. Preserve access to original files and useful diagnostics.
 - A smaller context window must still accommodate the selected agent's overhead and task. Reject combinations that cannot provide a useful working budget.
 - Concise response instructions do not reliably control internal reasoning or runtime memory allocation.
-- Runtime settings may be global or require restart. Conflict handling and installation ownership remain undecided.
+- Runtime settings may be global or require restart. Conflict handling and ownership-detection mechanisms remain undecided. Installation ownership tracking is confirmed scope; see [Uninstallation and storage](uninstall-and-storage.md).
 - Prompt caching may reduce repeated computation, but it is not equivalent to removing tokens or reducing resident memory.
 - Profile controls, default budgets, optional tool integrations, supported agent versions, and evaluation methods remain undecided.
 - Efficiency helpers themselves consume resources; their overhead must fit the same constrained environment.

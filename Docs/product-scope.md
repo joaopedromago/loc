@@ -17,10 +17,17 @@ The intended user currently manages agent launchers through shell aliases and fu
 - Detect the computer's configuration and recommend suitable models for coding work.
 - Configure local coding agents to reduce unnecessary context and token use while aiming for high coding quality on machines with limited memory. See [Resource efficiency](resource-efficiency.md).
 - Set up the dependencies and configuration needed to use the selected coding agent locally.
+- Automatically identify and reuse existing installations of every supported technology. Never install a duplicate or reinstall an existing component during setup. See [Dependency detection and reuse](dependency-reuse.md).
 - Install required tools and download the selected models through the CLI where supported, including setups such as Ollama with a Qwen model.
 - When CLI installation is unavailable, open the relevant installation page in a browser and wait for the user to complete installation and confirm before continuing setup.
 - Launch coding agents with convenience comparable to existing aliases.
 - Update models when needed.
+- Provide an easy way to install loc itself and keep it updated on users' machines. See [Installing and updating loc](distribution-and-updates.md).
+- Support resumable setup, download and disk-space estimates, and an optional preview of intended changes.
+- Verify complete coding profiles, show actual runtime status, and generate diagnostic reports with sensitive information removed. See [Diagnostics and recovery](diagnostics-and-recovery.md).
+- Support profile export/import, repository-specific default profiles, and shell completion. See [Profiles](profiles.md).
+- Make local inference destinations explicit, prevent unexpected cloud fallback, and support verified offline operation for compatible environments. See [Local inference and offline operation](local-and-offline.md).
+- Track installation ownership and storage usage, provide controlled cleanup, and allow users to uninstall supported components and loc itself while accounting for shared dependencies. See [Uninstallation and storage](uninstall-and-storage.md).
 - Target Windows, Linux, and macOS.
 - Consider Python as the preferred starting language while leaving alternatives open.
 - Complete and review these static files before planning the application.

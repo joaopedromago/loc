@@ -2,11 +2,11 @@
 
 State: implemented
 
-This index and the documentation conventions are delivered. No application capability is implemented, and the scope is awaiting user review. Documentation completion does not imply approval to start planning or development.
+This index and the documentation conventions are delivered. No application capability is implemented. Confirmed requirements are recorded separately from the remaining proposals awaiting review. Documentation completion does not imply approval to start planning or development.
 
 ## Current phase
 
-Create `AGENTS.md`, `.gitignore`, and the static documents in `Docs/`. The user will review these files before application planning starts.
+Create the root `README.md`, `AGENTS.md`, `.gitignore`, and the static documents in `Docs/`. The user will review these files before application planning starts.
 
 `loc` is a working project and command name. Examples describe possible behavior, not commands available in this repository.
 
@@ -15,15 +15,21 @@ Create `AGENTS.md`, `.gitignore`, and the static documents in `Docs/`. The user 
 | Document | Subject | State |
 | --- | --- | --- |
 | [Product scope](product-scope.md) | Purpose, confirmed requirements, and product boundaries | not implemented |
-| [Profiles](profiles.md) | Multiple agent and model combinations | not implemented |
+| [Profiles](profiles.md) | Agent/model combinations, export/import, project defaults, and shell completion | not implemented |
 | [Setup and launch](setup-and-launch.md) | CLI installation, browser fallback, model downloads, and starting coding agents | not implemented |
+| [Dependency detection and reuse](dependency-reuse.md) | Automatic discovery and the strict no-duplicate installation requirement | not implemented |
+| [Diagnostics and recovery](diagnostics-and-recovery.md) | Resumable setup, previews, profile verification, status, and diagnostic reports | not implemented |
+| [Local inference and offline operation](local-and-offline.md) | Visible inference destinations, no cloud fallback, and offline behavior | not implemented |
+| [Uninstallation and storage](uninstall-and-storage.md) | Ownership, shared resources, cleanup, and uninstalling components or loc | not implemented |
+| [Technology candidates](technology-candidates.md) | Proposed integrations, optional helpers, and support boundaries | not implemented |
+| [Installing and updating loc](distribution-and-updates.md) | Easy installation, self-updates, and proposed GitHub distribution | not implemented |
 | [Model recommendations](model-recommendations.md) | Hardware-aware selection for coding agents | not implemented |
 | [Resource efficiency](resource-efficiency.md) | Relevant context, fewer tokens, memory limits, and coding quality | not implemented |
 | [Maintenance](maintenance.md) | Updates, compatibility checks, and proposed recovery behavior | not implemented |
 | [Platforms and constraints](platforms-and-constraints.md) | Windows, Linux, macOS, and technical limits | not implemented |
 | [Review and decisions](review-and-decisions.md) | Pending scope approval and unresolved decisions | not implemented |
 
-The root [AGENTS.md](../AGENTS.md) defines repository working instructions. The root [.gitignore](../.gitignore) excludes local and generated artifacts.
+The root [README.md](../README.md) introduces the project and its current status. The root [AGENTS.md](../AGENTS.md) defines repository working instructions. The root [.gitignore](../.gitignore) excludes local and generated artifacts.
 
 ## State definitions
 

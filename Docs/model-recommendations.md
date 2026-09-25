@@ -35,7 +35,7 @@ A recommendation should identify a model configuration for a particular agent an
 - Model weight size alone is insufficient to establish runtime memory requirements.
 - Hardware fit alone does not demonstrate reliable behavior with a coding agent.
 - Performance or compatibility must not be presented as measured when only estimated.
-- Catalog sources, maintenance ownership, ranking method, benchmark design, and offline behavior remain undecided.
+- Catalog sources, maintenance ownership, ranking method, benchmark design, and cached-catalog freshness rules remain undecided. Recommendations in offline mode must use available local metadata without network refreshes; see [Local inference and offline operation](local-and-offline.md).
 - Using an existing hardware recommendation tool is a candidate approach, not an approved dependency.
 
 ## Delivery evidence
