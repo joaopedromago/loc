@@ -2,7 +2,7 @@
 
 State: implemented
 
-The user authorized application implementation on 2026-09-25. The repository now contains a working Python CLI, tests, installers, and release workflow definitions. Live Mac coding checks and hosted CLI tests on all three platforms have passed. The first release is authorized; Windows/Linux live agents and dependency installers still need validation.
+The user authorized application implementation on 2026-09-25. The repository now contains a working Python CLI, tests, installers, and release workflow definitions. Live Mac coding checks and hosted CLI tests on all three platforms have passed. The first release, [v0.1.0](https://github.com/joaopedromago/loc/releases/tag/v0.1.0), is published and its installer verified. Windows/Linux live agents and dependency installers still need validation.
 
 ## Documents
 

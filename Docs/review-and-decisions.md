@@ -29,7 +29,7 @@ The detailed limits and implementation states live in their capability documents
 
 ## Remaining decisions and delivery limits
 
-Future runtime adapters, expanded native platform coverage, richer model benchmarks, additional completion behavior, advanced runtime memory tuning, and signed release provenance remain future work. The first public release is authorized and being prepared; publication evidence is recorded separately from workflow definitions. No further scope approval is required to fix or test the implementation already authorized.
+Future runtime adapters, expanded native platform coverage, richer model benchmarks, additional completion behavior, advanced runtime memory tuning, and signed release provenance remain future work. The first public release, v0.1.0, was published as authorized; [publication and installation evidence](implementation-and-testing.md#v010-release-verification) is recorded separately from workflow definitions. No further scope approval is required to fix or test the implementation already authorized.
 
 ## Delivery evidence
 

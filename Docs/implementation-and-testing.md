@@ -55,13 +55,17 @@ The fix was applied to the existing pipx-managed loc installation and checked ag
 
 GitHub Actions passed the six Python 3.11/3.14 jobs across macOS, Windows, and Linux for commit `37118bc`: [observed test run](https://github.com/joaopedromago/loc/actions/runs/36179465444). These jobs exercise the automated suite, package installation, command version, and documentation checks. Live agent setup and OS-specific dependency installers remain separate validation work.
 
-## v0.1.0 release preparation
+## v0.1.0 release verification
 
 The user authorized the first public release and chose the MIT license. Both package version declarations are `0.1.0`. The wheel includes SPDX license metadata, the MIT license text, the `loc` entry point, and no runtime dependencies. The source archive includes the license, changelog, release notes, tests, and documentation; local state, caches, and model weights are excluded.
 
 Release preparation passed all 132 tests on Python 3.12 and 3.14 on the Mac. `scripts/smoke_install.py --dist PATH` passed against the built wheel and distributed installer, using fixture download responses and a real temporary Python environment. It checked checksums, command help/version, installation ownership, duplicate prevention without another download, and self-uninstall preserving saved profile state byte-for-byte. The developer's existing installations were not changed.
 
-The tag workflow repeats the hosted test matrix and runs this installation check before creating a draft with six download assets. Public-download verification will be recorded after the draft is published.
+The release commit `ee88002` passed the six hosted platform/version jobs in [the main-branch run](https://github.com/joaopedromago/loc/actions/runs/36184677379). The [tag workflow](https://github.com/joaopedromago/loc/actions/runs/36184860870) passed the same matrix and the Linux build/installer smoke check, then created a draft with six download assets.
+
+[loc v0.1.0](https://github.com/joaopedromago/loc/releases/tag/v0.1.0) was published through external Chrome on 2026-09-25. GitHub exposes it as the latest regular release. All six assets were downloaded and their checksums verified. `scripts/smoke_install.py --dist PATH --published` then passed on the Mac with real unauthenticated GitHub API and wheel downloads, using the published installer. The public latest-installer link also returned the expected file; the published wheel/source contained the expected version, license, and tagged release files.
+
+The developer's existing pipx installation was detected without another installation. Its read-only `loc self update --check --json` returned installed/available version `0.1.0` and `update_available: false`. An upgrade between different published versions remains a future live check; update failures and owner routing have fixture coverage.
 
 ## Live Mac verification
 
@@ -96,7 +100,7 @@ The script creates configuration aliases and retains its test state for inspecti
 
 - Live Windows/Linux agent setup, OS-specific dependency installer/uninstaller behavior, and additional hardware.
 - OpenCode 1 live integration; its adapter has configuration tests.
-- Production release publishing and first installation from real release assets.
+- Live upgrade between different published versions, including native Windows file-lock behavior.
 - Fresh-machine installation routes: existing software was deliberately preserved on this Mac.
 - Representative coding-quality, token-efficiency, latency, and peak-memory comparisons. Unmeasured values remain unknown.
 

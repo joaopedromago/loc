@@ -35,9 +35,9 @@ Self-uninstall removes loc's package through that owner, preserving profile data
 
 ## GitHub delivery
 
-The first release is `v0.1.0`, under the [MIT license](../LICENSE). A version tag matching package metadata runs the Python 3.11/3.14 test matrix on macOS, Windows, and Linux, builds a wheel/source archive, copies installer assets, and creates `SHA256SUMS`. The workflow exercises installation, repeated installation, and package removal with data preservation before creating a draft GitHub Release. Publishing the reviewed draft makes it available to the installer and CLI updater.
+The first public release is [v0.1.0](https://github.com/joaopedromago/loc/releases/tag/v0.1.0), under the [MIT license](../LICENSE). A version tag matching package metadata runs the Python 3.11/3.14 test matrix on macOS, Windows, and Linux, builds a wheel/source archive, copies installer assets, and creates `SHA256SUMS`. The workflow exercises installation, repeated installation, and package removal with data preservation before creating a draft GitHub Release. Publishing the reviewed draft makes it available to the installer and CLI updater.
 
-The user authorized release preparation and publication through external Chrome. The [release notes](../releases/v0.1.0.md) describe the downloads and support limits. The [changelog](../CHANGELOG.md) records version history: during `0.x`, patches contain fixes and minor versions may change capabilities or compatibility. Published tags and assets are not replaced. `1.0.0` will establish a stable CLI/configuration contract.
+The user authorized release preparation and v0.1.0 was published through external Chrome on 2026-09-25. The [release notes](../releases/v0.1.0.md) describe the downloads and support limits. The [changelog](../CHANGELOG.md) records version history: during `0.x`, patches contain fixes and minor versions may change capabilities or compatibility. Published tags and assets are not replaced. `1.0.0` will establish a stable CLI/configuration contract.
 
 GitHub standard hosted Actions runners are free for public repositories; private quotas and larger-runner charges differ. Release assets must each stay below 2 GiB. Optional Pages documentation and PyPI Trusted Publishing remain future choices, not dependencies of installation. Repository visibility was not changed.
 
@@ -51,4 +51,4 @@ Unknown/custom hidden loc installations require resolution before installation; 
 
 ## Delivery evidence
 
-A wheel was built and installed into an isolated Mac environment. Repeating the installer made no changes. Self-uninstall removed that test package while preserving its saved profiles byte-for-byte. Checksums, failed metadata, unknown owners, and non-mutating previews are covered by tests. Publication and downloaded-asset checks are recorded in [Implementation and verification](implementation-and-testing.md) once completed.
+A wheel was built and installed into an isolated Mac environment. Repeating the installer made no changes. Self-uninstall removed that test package while preserving its saved profiles byte-for-byte. Checksums, failed metadata, unknown owners, and non-mutating previews are covered by tests. The v0.1.0 tag workflow passed its six-job platform/version matrix and Linux packaging/installer check. Installation from the published assets also passed on the Mac with real GitHub downloads; the existing CLI discovered version 0.1.0 through its update check. Detailed evidence is recorded in [Implementation and verification](implementation-and-testing.md#v010-release-verification).

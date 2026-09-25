@@ -30,7 +30,7 @@ See [Implementation and verification](implementation-and-testing.md) for archite
 
 ## Remaining work
 
-Native Windows/Linux validation, future runtime adapters, public release deployment, and broader quality/performance measurements remain incomplete. Existing installations and model artifacts were preserved during local development.
+Live Windows/Linux agent and dependency-installer validation, future runtime adapters, and broader quality/performance measurements remain incomplete. The first public release, v0.1.0, is published and its release installer has been verified. Existing installations and model artifacts were preserved during local development.
 
 ## Delivery evidence
 

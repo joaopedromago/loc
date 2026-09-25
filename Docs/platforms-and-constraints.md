@@ -10,7 +10,7 @@ State: partially implemented
 | Installation discovery | Native paths, Homebrew, tool managers exercised | PATH/native locations/registry/tool environments; validation pending | PATH/native locations/dpkg/rpm/tool environments; validation pending |
 | Agent launch with Ollama | Claude Code, OpenCode 2, Aider live checks | Native checks pending | Native checks pending |
 | Full offline mode | Claude Code/Aider live checks | Unsupported; fail closed | Unsupported; fail closed |
-| Installer/uninstaller routes | Fixture coverage; loc package install/uninstall exercised | Fixture/command coverage; native checks pending | Fixture/command coverage; native checks pending |
+| Installer/uninstaller routes | Fixture coverage; loc package install/uninstall exercised | Fixture/command coverage; native checks pending | Release wheel install/repeat/uninstall passed in hosted Linux; dependency installer checks pending |
 
 Python 3.11+ is required for loc. Supported agent versions and their interpreter/runtime requirements are independent. Existing incompatible installations remain present; loc never obtains another copy as a shortcut.
 
