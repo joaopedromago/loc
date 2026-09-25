@@ -12,7 +12,7 @@ loc sets up, runs, and maintains local coding-agent environments. Choose a profi
 
 The recommended pairing is **Claude Code + a local Qwen Coder model through Ollama**, with model selection based on your hardware. OpenCode, Aider, and other compatible local models are also supported.
 
-> **Alpha:** macOS has live integration coverage. Native Windows and Linux validation is pending. Install from source until the first GitHub release is published.
+> **Early development:** automated CLI tests run on macOS, Windows, and Linux. Live coding-agent checks cover Apple Silicon macOS; Windows/Linux agent setup still needs validation.
 
 ## Contents
 
@@ -27,6 +27,7 @@ The recommended pairing is **Claude Code + a local Qwen Coder model through Olla
 - [Platform support](#platform-support)
 - [Contributing](#contributing)
 - [Documentation](#documentation)
+- [License](#license)
 
 ## Installation
 
@@ -37,6 +38,26 @@ The recommended pairing is **Claude Code + a local Qwen Coder model through Olla
 - Internet access when downloading missing software or model weights.
 
 loc has no runtime Python package dependencies. Agents and Ollama can already be installed; setup detects and reuses them. Missing components use supported installers or a guided manual installation flow.
+
+### Install the latest release
+
+Download [install.py](https://github.com/joaopedromago/loc/releases/latest/download/install.py) from the [latest release](https://github.com/joaopedromago/loc/releases/latest), then run it from the download directory:
+
+**macOS / Linux**
+
+```sh
+python3 install.py
+```
+
+**Windows PowerShell**
+
+```powershell
+python install.py
+```
+
+The installer checks the release wheel against `SHA256SUMS` before installation. It uses an existing uv or pipx, otherwise an isolated environment sharing your Python interpreter. Repeating installation detects the existing loc copy and leaves it in place. Add `--dry-run` to preview.
+
+The optional `install.sh` and `install.ps1` release assets are wrappers; keep `install.py` in the same directory. Python must already be installed.
 
 ### Install from source
 
@@ -54,7 +75,7 @@ python3 scripts/install.py --source .
 python scripts/install.py --source .
 ```
 
-Add `--dry-run` to preview the installation. The installer uses an existing uv or pipx, otherwise an isolated environment sharing your Python interpreter. An existing loc installation is reused; running the installer again does not create another copy.
+This route is intended for development or an unreleased checkout. It uses the same existing-installation detection as the release installer.
 
 The installer prints the command location. It does not edit your shell files or PATH. If your shell cannot find `loc`, follow [Command not found](#command-not-found).
 
@@ -72,7 +93,7 @@ python3 -m loc_cli --help
 python3 -m loc_cli scan
 ```
 
-Release installers and checksum verification are implemented, but a public release has not yet been published. See [Installing and updating loc](Docs/distribution-and-updates.md) for the distribution details.
+See [Installing and updating loc](Docs/distribution-and-updates.md) for the distribution details.
 
 ## Quickstart
 
@@ -207,7 +228,7 @@ loc self update --check
 loc self update
 ```
 
-Self-update requires a published GitHub release. It verifies the release checksum and updates through the original installation manager, preserving your profiles. Until a release is available, use the current source checkout directly with `python3 -m loc_cli`.
+Self-update checks the latest stable GitHub release, verifies its checksum, and updates through the original installation manager, preserving your profiles. See the [changelog](CHANGELOG.md) for version history and the versioning policy.
 
 ### Update models and tools
 
@@ -351,8 +372,8 @@ State: partially implemented
 | Platform | Current verification |
 | --- | --- |
 | macOS, Apple Silicon | Live setup and coding edits with Claude Code, OpenCode 2, and Aider; offline checks with Claude/Aider |
-| Linux | Adapters and CI configuration present; native validation pending |
-| Windows | Adapters and CI configuration present; native validation pending |
+| Linux | Python 3.11/3.14 automated CLI tests passed; live agents and dependency installers pending |
+| Windows | Python 3.11/3.14 automated CLI tests passed; live agents and dependency installers pending |
 
 The current runtime is Ollama. LM Studio, llama.cpp, and MLX-LM remain future integrations. OpenCode 1 has configuration tests; its live integration is pending. Recommendations estimate fit and do not claim measured comparative coding quality.
 
@@ -381,3 +402,7 @@ Application tests use isolated fixtures for installers and destructive operation
 - [Full documentation index](Docs/README.md)
 
 Wordmark assets: [SVG](assets/loc-logo.svg) · [PNG](assets/loc-logo.png) · [Light theme](assets/loc-logo-light.svg) · [Dark theme](assets/loc-logo-dark.svg).
+
+## License
+
+loc is released under the [MIT License](LICENSE). Integrated agents, runtimes, and model weights retain their own licenses.

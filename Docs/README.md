@@ -2,7 +2,7 @@
 
 State: implemented
 
-The user authorized application implementation on 2026-09-25. The repository now contains a working Python CLI, tests, installers, and release workflow definitions. Native Mac checks have run; Windows/Linux and production release deployment still have explicit gaps.
+The user authorized application implementation on 2026-09-25. The repository now contains a working Python CLI, tests, installers, and release workflow definitions. Live Mac coding checks and hosted CLI tests on all three platforms have passed. The first release is authorized; Windows/Linux live agents and dependency installers still need validation.
 
 ## Documents
 

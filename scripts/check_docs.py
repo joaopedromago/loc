@@ -6,10 +6,11 @@ from pathlib import Path
 root = Path(__file__).resolve().parents[1]
 index = (root / "Docs/README.md").read_text()
 documents = sorted((root / "Docs").glob("*.md"))
-for path in [root / "README.md", root / "AGENTS.md", *documents]:
+for path in [root / "README.md", root / "AGENTS.md", root / "CHANGELOG.md", *documents, *sorted((root / "releases").glob("*.md"))]:
     text = path.read_text()
     states = re.findall(r"^State: (.+)$", text, re.MULTILINE)
-    assert len(states) == 1 and states[0] in {"implemented", "partially implemented", "not implemented"}, path
+    if path.parent.name == "Docs" or path.name in {"README.md", "AGENTS.md"}:
+        assert len(states) == 1 and states[0] in {"implemented", "partially implemented", "not implemented"}, path
     assert text.endswith("\n"), path
     assert all(line == line.rstrip() for line in text.splitlines()), path
     assert sum(line.startswith("```") for line in text.splitlines()) % 2 == 0, path

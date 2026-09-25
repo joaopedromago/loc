@@ -6,7 +6,7 @@ State: implemented
 
 The user first requested static documentation for review, then approved the additional usability/lifecycle scope and uninstallation. On 2026-09-25 the user explicitly requested implementation of everything documented and testing on their Mac. Planning, application code, packaging, tests, and workflow definitions are now authorized; the documentation-only restriction is superseded.
 
-The user will also run Windows/Linux tests. The implementation must preserve the existing local AI environment during development. No public release, repository visibility change, or external communication was requested.
+The user will also run Windows/Linux tests. The implementation must preserve the existing local AI environment during development. The user subsequently authorized preparing, testing, committing, pushing, and publishing the first release, `v0.1.0`, using external Chrome for publication. The user selected the MIT license. Repository visibility changes remain outside the request.
 
 ## Selected implementation decisions
 
@@ -29,7 +29,7 @@ The detailed limits and implementation states live in their capability documents
 
 ## Remaining decisions and delivery limits
 
-Future runtime adapters, expanded native platform coverage, richer model benchmarks, additional completion behavior, advanced runtime memory tuning, and signed release provenance remain future work. Actual public publishing and deployment are separate from the checked-in release machinery. No further scope approval is required to fix or test the implementation already authorized.
+Future runtime adapters, expanded native platform coverage, richer model benchmarks, additional completion behavior, advanced runtime memory tuning, and signed release provenance remain future work. The first public release is authorized and being prepared; publication evidence is recorded separately from workflow definitions. No further scope approval is required to fix or test the implementation already authorized.
 
 ## Delivery evidence
 

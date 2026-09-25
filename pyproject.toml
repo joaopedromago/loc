@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,6 +8,8 @@ version = "0.1.0"
 description = "Set up and maintain local coding-agent environments"
 readme = "README.md"
 requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{name = "loc contributors"}]
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -22,6 +24,8 @@ loc = "loc_cli.cli:main"
 
 [project.urls]
 Repository = "https://github.com/joaopedromago/loc"
+Releases = "https://github.com/joaopedromago/loc/releases"
+Issues = "https://github.com/joaopedromago/loc/issues"
 
 [tool.setuptools.packages.find]
 include = ["loc_cli*"]

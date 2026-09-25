@@ -53,7 +53,15 @@ Model-identity regressions verify that agents and API metadata use the original 
 
 The fix was applied to the existing pipx-managed loc installation and checked against the tested source. A fresh Claude Code session using the existing daily profile answered the model-identity question with `qwen3.8-coder-q8-64k:latest`; its model-usage metadata used the same original tag. This exercised one inference request with zero gateway errors. Saved profiles, `.zshrc`, and the complete model-name/digest inventory were unchanged. Existing sessions require restart to receive the new configuration.
 
-GitHub Actions defines a Python 3.11/3.14 matrix across macOS, Windows, and Linux. A workflow file is not evidence that hosted jobs have run. No workflow has been dispatched or release published during this implementation.
+GitHub Actions passed the six Python 3.11/3.14 jobs across macOS, Windows, and Linux for commit `37118bc`: [observed test run](https://github.com/joaopedromago/loc/actions/runs/36179465444). These jobs exercise the automated suite, package installation, command version, and documentation checks. Live agent setup and OS-specific dependency installers remain separate validation work.
+
+## v0.1.0 release preparation
+
+The user authorized the first public release and chose the MIT license. Both package version declarations are `0.1.0`. The wheel includes SPDX license metadata, the MIT license text, the `loc` entry point, and no runtime dependencies. The source archive includes the license, changelog, release notes, tests, and documentation; local state, caches, and model weights are excluded.
+
+Release preparation passed all 132 tests on Python 3.12 and 3.14 on the Mac. `scripts/smoke_install.py --dist PATH` passed against the built wheel and distributed installer, using fixture download responses and a real temporary Python environment. It checked checksums, command help/version, installation ownership, duplicate prevention without another download, and self-uninstall preserving saved profile state byte-for-byte. The developer's existing installations were not changed.
+
+The tag workflow repeats the hosted test matrix and runs this installation check before creating a draft with six download assets. Public-download verification will be recorded after the draft is published.
 
 ## Live Mac verification
 
@@ -86,7 +94,7 @@ The script creates configuration aliases and retains its test state for inspecti
 
 ## Remaining verification
 
-- Native Windows/Linux runs, OS-specific installer/uninstaller behavior, and additional hardware.
+- Live Windows/Linux agent setup, OS-specific dependency installer/uninstaller behavior, and additional hardware.
 - OpenCode 1 live integration; its adapter has configuration tests.
 - Production release publishing and first installation from real release assets.
 - Fresh-machine installation routes: existing software was deliberately preserved on this Mac.

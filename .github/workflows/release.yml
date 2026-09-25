@@ -2,6 +2,9 @@ name: Release
 on:
   push:
     tags: ['v*']
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 permissions:
   contents: read
 jobs:
@@ -25,7 +28,9 @@ jobs:
       - run: python -m build
       - name: Create checksums and installer assets
         run: python scripts/release_assets.py
-      - name: Publish GitHub release
+      - name: Test release installation
+        run: python scripts/smoke_install.py --dist dist
+      - name: Prepare draft GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" dist/*.whl dist/*.tar.gz dist/install.py dist/install.sh dist/install.ps1 dist/SHA256SUMS --verify-tag --draft --title "loc $GITHUB_REF_NAME" --notes-file "releases/$GITHUB_REF_NAME.md"

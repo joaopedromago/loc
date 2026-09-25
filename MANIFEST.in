@@ -1,4 +1,6 @@
 include AGENTS.md
+include LICENSE CHANGELOG.md
+recursive-include releases *.md
 recursive-include assets *.svg *.png
 recursive-include Docs *.md
 recursive-include scripts *.py *.sh *.ps1

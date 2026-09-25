@@ -6,7 +6,7 @@ State: partially implemented
 
 | Area | macOS | Windows | Linux |
 | --- | --- | --- | --- |
-| Python CLI, profiles, JSON state | Locally exercised | Implementation and CI definition; native run pending | Implementation and CI definition; native run pending |
+| Python CLI, profiles, JSON state | Locally exercised | Hosted Python 3.11/3.14 tests passed | Hosted Python 3.11/3.14 tests passed |
 | Installation discovery | Native paths, Homebrew, tool managers exercised | PATH/native locations/registry/tool environments; validation pending | PATH/native locations/dpkg/rpm/tool environments; validation pending |
 | Agent launch with Ollama | Claude Code, OpenCode 2, Aider live checks | Native checks pending | Native checks pending |
 | Full offline mode | Claude Code/Aider live checks | Unsupported; fail closed | Unsupported; fail closed |
@@ -28,4 +28,4 @@ No support claim follows merely from a Python branch or workflow definition. The
 
 ## Delivery evidence
 
-Mac runtime, package, network-sandbox, and coding-agent checks passed. Portable state and platform-specific branches have automated fixture coverage. Windows/Linux native verification remains pending as requested by the user.
+Mac runtime, package, network-sandbox, and coding-agent checks passed. Portable state and platform-specific branches have automated fixture coverage. Hosted CLI tests passed on Windows/Linux; live agents and OS-specific dependency installers remain pending.
