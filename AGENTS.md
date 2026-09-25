@@ -6,13 +6,12 @@ These instructions govern work in this repository. Application intent, limits, a
 
 ## Current phase
 
-The current phase is static documentation for user review. The application is not implemented.
+The user authorized application planning and implementation on 2026-09-25, including testing on their Mac. Windows and Linux need additional testing on those systems.
 
-- Create and refine the requested documentation and repository hygiene files.
-- Wait for the user's confirmation of this scope before starting application planning.
-- Do not create application code, an implementation plan, package manifests, dependency installations, scaffolding, tests, or CI workflows during this phase.
-- Documentation checks do not require separate confirmation.
-- After the user authorizes a later phase, follow that authorization without asking for the same confirmation again.
+- Implement the approved scope, with explicit support boundaries and delivery evidence.
+- Exercise destructive operations in isolated fixtures; preserve the user's existing installations, configuration, and model artifacts during development.
+- Run meaningful automated tests and appropriate local integration checks.
+- Do not publish releases or change repository visibility unless requested.
 
 ## Read before working
 

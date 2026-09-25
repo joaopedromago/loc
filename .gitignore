@@ -1,5 +1,5 @@
 # State: implemented
-# Repository hygiene only; these patterns do not select an application language.
+# Local environments and generated artifacts are never part of a release.
 
 # Operating system and editor artifacts
 .DS_Store
@@ -26,7 +26,7 @@ Desktop.ini
 .cache/
 .tmp/
 
-# Python environments and generated artifacts, if Python is selected
+# Python environments and generated artifacts
 .venv/
 venv/
 __pycache__/
@@ -52,3 +52,6 @@ models/
 *.gguf
 *.ggml
 *.safetensors
+
+# Local diagnostic reports (export explicitly when sharing)
+loc-diagnostic-report*.json

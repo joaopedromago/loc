@@ -1,43 +1,36 @@
 # Model recommendations
 
-State: not implemented
+State: partially implemented
 
-## Confirmed intent
+## Delivered behavior
 
-Inspect the computer's configuration and help select suitable available models for local coding agents.
+```sh
+loc models list
+loc models recommend
+loc models recommend --agent opencode --preference balanced
+loc models recommend --agent aider --preference speed --context 16384
+loc models catalog
+loc models refresh
+```
 
-Recommendations must remain within the coding-agent scope and support profiles pairing different agents and models.
+Hardware inspection reports OS/architecture, CPU count, memory capacity/availability, disk space, Apple Silicon shared memory, and NVIDIA information when `nvidia-smi` is already available. It does not install a hardware helper merely to inspect the machine.
 
-## Proposed selection criteria for review
+The preferred setup is Claude Code with a local Qwen Coder model through Ollama, as selected by the user. `loc models recommend` defaults to Claude. It prefers Qwen Coder candidates within the same estimated-fit category, then applies the selected quality/speed heuristic and installed-model reuse preference. A fitting alternative ranks above an oversized Qwen Coder model. Other agents retain their own explicit selection and general model ranking.
 
-- Hardware and runtime compatibility, including usable accelerator memory and system memory.
-- Storage requirements and existing model downloads.
-- Coding quality and the selected agent's requirements for tool calls, structured output, or edit formats.
-- Model quantization, context requirements, runtime overhead, and memory reserved for other applications.
-- Responsiveness for the user's intended coding workload.
-- The user's preference for speed, quality, or longer context.
-- The useful task context remaining after agent overhead, and total task efficiency including retries and compaction. See [Resource efficiency](resource-efficiency.md).
+Recommendations combine a bounded catalog with the existing Ollama inventory. Entries identify exact tags, estimated artifact size, context, source, tool support, and catalog date. loc reads installed model metadata without loading models or downloading weights. Tool-driven agents exclude entries without demonstrated tool metadata. Existing custom models can be recommended from their runtime metadata; Qwen Coder naming, including versioned custom aliases, identifies the preferred family rather than proving its quality. Installed models with unreadable metadata or hosted-inference redirects are excluded instead of borrowing catalog capability claims.
 
-A recommendation should identify a model configuration for a particular agent and computer. A model name alone does not describe the full configuration.
+The ranking reserves OS/application memory headroom and considers weights, a conservative runtime/cache estimate, selected context, coding-oriented catalog priority, and reuse of installed models. Installed tags and named custom variants retain their matching catalog family's priority; capability checks still use the exact installed model. Speed preference favors smaller weights within the fit and preferred-pairing categories. Discrete accelerator fit is reported separately from system RAM; CPU offload may be required.
 
-## Proposed evidence and freshness behavior
+Interactive setup offers a default model only when a compatible Qwen Coder candidate has a positive memory-fit estimate. Unknown memory or insufficient capacity leaves the model choice explicit. Noninteractive setup requires `--model`; recommendations do not trigger downloads, alter profiles, or switch an existing agent/model.
 
-- Maintain a bounded catalog of supported model configurations with sources and freshness information.
-- Distinguish estimated fit or speed from locally measured results.
-- Explain why candidates are recommended and identify uncertainty.
-- Consider local compatibility checks and benchmarks after download.
-- Allow manual selection when the user prefers another supported configuration.
-- Refresh recommendation data independently of changing an existing working profile.
+The bundled catalog is deliberately small. `loc models refresh` explicitly obtains maintained project metadata from GitHub and validates it before replacing the cached catalog. Offline use keeps locally available metadata. A failed refresh does not change working profiles.
 
-## Limits and open decisions
+## Limits
 
-- “Best” is workload-dependent and is not a promise to identify a universal market winner.
-- Model weight size alone is insufficient to establish runtime memory requirements.
-- Hardware fit alone does not demonstrate reliable behavior with a coding agent.
-- Performance or compatibility must not be presented as measured when only estimated.
-- Catalog sources, maintenance ownership, ranking method, benchmark design, and cached-catalog freshness rules remain undecided. Recommendations in offline mode must use available local metadata without network refreshes; see [Local inference and offline operation](local-and-offline.md).
-- Using an existing hardware recommendation tool is a candidate approach, not an approved dependency.
+This is an explainable estimate, not a universal market ranking or a coding benchmark. Weight size alone does not establish runtime memory use. KV caches, architecture, attention implementation, parallelism, and workload can change fit substantially. No inference is run solely to manufacture measured values.
+
+AMD/Intel accelerator capacity, detailed CPU throughput, freshness policy beyond the visible catalog date, and benchmark-driven ranking remain incomplete. Catalog priority is a heuristic and needs ongoing review as models change. Unknown memory or tool information is not represented as measured support.
 
 ## Delivery evidence
 
-None. Hardware detection, catalog ingestion, scoring, and validation are not implemented.
+Ranking/budget behavior is tested with fixtures, including Qwen Coder preference, installed alternatives, low/unknown memory, custom model metadata, explicit overrides, and preservation of existing profiles. Recommendations are also inspected on the Mac's actual inventory. Source model identities used by live integration checks were present locally. [Implementation and verification](implementation-and-testing.md) records their coverage.

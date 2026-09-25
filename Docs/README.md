@@ -2,47 +2,38 @@
 
 State: implemented
 
-This index and the documentation conventions are delivered. No application capability is implemented. Confirmed requirements are recorded separately from the remaining proposals awaiting review. Documentation completion does not imply approval to start planning or development.
-
-## Current phase
-
-Create the root `README.md`, `AGENTS.md`, `.gitignore`, and the static documents in `Docs/`. The user will review these files before application planning starts.
-
-`loc` is a working project and command name. Examples describe possible behavior, not commands available in this repository.
+The user authorized application implementation on 2026-09-25. The repository now contains a working Python CLI, tests, installers, and release workflow definitions. Native Mac checks have run; Windows/Linux and production release deployment still have explicit gaps.
 
 ## Documents
 
 | Document | Subject | State |
 | --- | --- | --- |
-| [Product scope](product-scope.md) | Purpose, confirmed requirements, and product boundaries | not implemented |
-| [Profiles](profiles.md) | Agent/model combinations, export/import, project defaults, and shell completion | not implemented |
-| [Setup and launch](setup-and-launch.md) | CLI installation, browser fallback, model downloads, and starting coding agents | not implemented |
-| [Dependency detection and reuse](dependency-reuse.md) | Automatic discovery and the strict no-duplicate installation requirement | not implemented |
-| [Diagnostics and recovery](diagnostics-and-recovery.md) | Resumable setup, previews, profile verification, status, and diagnostic reports | not implemented |
-| [Local inference and offline operation](local-and-offline.md) | Visible inference destinations, no cloud fallback, and offline behavior | not implemented |
-| [Uninstallation and storage](uninstall-and-storage.md) | Ownership, shared resources, cleanup, and uninstalling components or loc | not implemented |
-| [Technology candidates](technology-candidates.md) | Proposed integrations, optional helpers, and support boundaries | not implemented |
-| [Installing and updating loc](distribution-and-updates.md) | Easy installation, self-updates, and proposed GitHub distribution | not implemented |
-| [Model recommendations](model-recommendations.md) | Hardware-aware selection for coding agents | not implemented |
-| [Resource efficiency](resource-efficiency.md) | Relevant context, fewer tokens, memory limits, and coding quality | not implemented |
-| [Maintenance](maintenance.md) | Updates, compatibility checks, and proposed recovery behavior | not implemented |
-| [Platforms and constraints](platforms-and-constraints.md) | Windows, Linux, macOS, and technical limits | not implemented |
-| [Review and decisions](review-and-decisions.md) | Pending scope approval and unresolved decisions | not implemented |
+| [Product scope](product-scope.md) | Confirmed requirements and product boundaries | partially implemented |
+| [Profiles](profiles.md) | Agent/model profiles, portability, project defaults, completion | implemented |
+| [Setup and launch](setup-and-launch.md) | Detection, installation, recovery, local agent sessions | partially implemented |
+| [Dependency detection and reuse](dependency-reuse.md) | Discovery, ownership, and strict duplicate prevention | partially implemented |
+| [Diagnostics and recovery](diagnostics-and-recovery.md) | Previews, verification, status, and reports | partially implemented |
+| [Local inference and offline operation](local-and-offline.md) | Model restrictions and OS-enforced offline behavior | partially implemented |
+| [Uninstallation and storage](uninstall-and-storage.md) | Ownership, references, storage, cleanup, and removal | partially implemented |
+| [Supported technologies and candidates](technology-candidates.md) | Initial integrations and future runtime candidates | partially implemented |
+| [Installing and updating loc](distribution-and-updates.md) | Package, installers, self-management, GitHub delivery | partially implemented |
+| [Model recommendations](model-recommendations.md) | Hardware inspection, catalog, estimated fit | partially implemented |
+| [Resource efficiency](resource-efficiency.md) | Context, compaction, output, and memory tradeoffs | partially implemented |
+| [Maintenance](maintenance.md) | Model/component updates and retained rollback | partially implemented |
+| [Platforms and constraints](platforms-and-constraints.md) | macOS, Windows, Linux, and verified coverage | partially implemented |
+| [Review and decisions](review-and-decisions.md) | Resolved implementation authorization and choices | implemented |
+| [Implementation and verification](implementation-and-testing.md) | Architecture, checks, and observed results | partially implemented |
 
-The root [README.md](../README.md) introduces the project and its current status. The root [AGENTS.md](../AGENTS.md) defines repository working instructions. The root [.gitignore](../.gitignore) excludes local and generated artifacts.
+The root [README.md](../README.md) introduces the CLI. [AGENTS.md](../AGENTS.md) governs repository work. [.gitignore](../.gitignore) excludes generated/local artifacts.
 
 ## State definitions
 
-Every document declares one of these exact states near its beginning:
+Every Markdown document in this directory declares exactly one state near its beginning:
 
-- `implemented`: the subject is delivered, with evidence appropriate to that subject.
-- `partially implemented`: some of the subject is delivered; the document must identify what works and what remains.
-- `not implemented`: the subject has no delivered implementation. Intent, proposals, and examples can still be documented.
+- `implemented`: its subject is delivered, with appropriate evidence.
+- `partially implemented`: delivered behavior and remaining work are identified.
+- `not implemented`: there is no delivered implementation of its subject.
 
-For product documents, state refers to application behavior. For this index, it refers only to the index and documentation conventions. For the review document, it refers to resolution of the review and decisions.
+State describes delivery, not whether requirements were written or approved. A capability can be approved yet only partially implemented. The index's state refers to this index; the review document's state refers to the resolved authorization and decision record.
 
-Implementation state and user approval are separate. An approved requirement can remain `not implemented`.
-
-## Maintenance convention
-
-When authorized work changes a capability, update its document and this index together. Record the resulting behavior, verification evidence, and remaining limits before advancing its state.
+Update affected capability documents, their evidence, and this index together when behavior changes. Do not turn fixture tests or workflow definitions into claims of native platform verification.

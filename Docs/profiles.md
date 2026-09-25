@@ -1,68 +1,47 @@
 # Profiles
 
-State: not implemented
+State: implemented
 
-## Confirmed intent
+## Intent and delivered behavior
 
-Multiple profiles are a core requirement. A user must be able to keep combinations such as Claude Code with Qwen3-Coder-Next and OpenCode with Qwen3.8 on the same computer.
+Profiles store an agent, Ollama source model, context/output/map budgets, temperature, supported sampling parameters, local endpoint, resolved model reference, and model digests. Several profiles may reuse the same agents and model layers.
 
-A profile represents a selected coding agent and model, together with the configuration needed to run that combination.
+Supported agents are `claude`, `opencode`, and `aider`. The recommended pairing is Claude Code with a local Qwen Coder model, selected to fit the machine. New profiles default to `claude`; existing profiles keep their agent/model. OpenCode + Qwen3.8 and Claude Code + GLM remain supported alternatives; use exact installed or upstream model tags. Qwen3-Coder-Next below is an example for sufficient memory, not a fixed default on every machine.
 
-The user also wants setup to configure efficient local operation. Proposed context and memory behavior is documented in [Resource efficiency](resource-efficiency.md).
+```sh
+loc setup claude-next --agent claude --model qwen3-coder-next:latest --context 32768
+loc profiles
+loc profile show claude-next
+loc use claude-next
+loc use claude-next --project
+loc run
+loc run claude-next -- --continue
+```
 
-Creating additional profiles must reuse existing tools and compatible model artifacts without duplicate installations or downloads. This is a confirmed requirement; see [Dependency detection and reuse](dependency-reuse.md).
-
-The user also approved portable profile export/import, repository-specific default profiles, and shell completion.
+Explicit profile selection takes precedence over the nearest repository `.loc.json`, then the user-wide default. Repository discovery stops at a Git boundary. `.loc.json` accepts only a schema version and an existing profile name; it cannot contain executable instructions. Changing one repository default does not change others.
 
 ## Portability
 
-- Export enough profile information to reproduce the intended agent/model configuration, including resolved model identity and relevant settings where available.
-- Exclude credentials, machine-specific paths, repository content, and model weights from portable exports.
-- On import, detect existing dependencies and artifacts before obtaining anything, and recheck the destination computer's compatibility and memory constraints.
-- Report unavailable artifacts, incompatible settings, or conflicting profile names rather than silently replacing the requested model or an existing profile.
-- Keep imported profile data declarative. Importing a profile must not execute bundled scripts or treat arbitrary supplied commands as setup instructions.
+```sh
+loc profile export claude-next --file claude-next.json
+loc profile import claude-next.json --name imported-next
+loc setup imported-next --resume
+```
 
-The export format, versioning, and conflict-resolution interface remain undecided. Portability does not guarantee identical performance on different hardware.
+Exports contain declarative settings and source identity, without credentials, machine paths, repository content, model weights, or temporary model aliases. Imports enter `pending` state. Setup rechecks dependencies, model identity, and context on the destination. Conflicting profile names and unavailable artifacts produce actionable errors. A changed source digest requires explicit `--accept-model-change`.
 
-## Project defaults and shell completion
+Custom upstream aliases must already exist on the destination or be made available through their original recipe; exporting a profile does not publish or copy that model. Portability does not promise equal performance on different hardware.
 
-Allow a repository to select its default profile so that launching loc from that project can use the appropriate coding environment. Selecting a project default must not replace the defaults for unrelated repositories.
+## Removal and completion
 
-Provide shell completion for supported commands, profile names, and relevant options. Completion should not download models, start inference, or modify profiles.
+`loc profile remove NAME --dry-run` previews removal. Applying it removes the definition and rollback references while keeping software and models. Repository defaults pointing at a removed profile fail visibly; loc does not rewrite unrelated repositories.
 
-Proposed default precedence is an explicit CLI profile, then the repository default, then a user-wide default. Exact configuration locations, trust handling for repository-provided settings, supported shells, and completion installation behavior remain undecided. Reading a repository default must not execute arbitrary repository content.
+`loc completion bash|zsh|fish|powershell` prints a completion script. Completion candidates include commands, profiles, and common flags, and do not start inference or modify state. Source the generated script using the selected shell's normal mechanism; loc does not modify shell files.
 
-## Illustrative profiles
+## Limits
 
-| Profile name | Coding agent | Model family |
-| --- | --- | --- |
-| `claude-next` | Claude Code | Qwen3-Coder-Next |
-| `opencode-qwen` | OpenCode | Qwen3.8 |
-| `claude-glm` | Claude Code | GLM-4.7-Flash |
-
-These names illustrate the requested combinations. They do not establish exact downloadable model identifiers, availability, or verified compatibility.
-
-## Proposed behavior for review
-
-- Give each profile a unique user-chosen name.
-- Allow the same agent in several profiles and the same model with several compatible agents.
-- Record the runtime, exact model reference, context size, model parameters, and agent launch settings.
-- Associate supported context, tool-output, and memory preferences with each profile. Expose settings that affect a shared runtime separately from settings isolated to one agent session.
-- Create another profile without replacing existing profiles.
-- Allow an explicit default profile and launching by name.
-- Apply environment variables and agent settings to the selected session without changing unrelated agent sessions.
-- Treat profile deletion separately from deletion of shared models and dependencies.
-
-Profile removal preserves installed components and model weights. Explicit uninstallation and shared-reference handling are defined in [Uninstallation and storage](uninstall-and-storage.md).
-
-## Limits and open decisions
-
-- Multiple stored profiles do not imply that their models can run concurrently within available memory.
-- A shared model update can affect multiple profiles; affected profiles must be visible to the user.
-- Storage format, repository-default locations, export format, renaming, conflict resolution, and deletion commands remain undecided. Export/import and repository-specific defaults are confirmed capabilities.
-- Profile portability must account for different hardware and runtime availability on the destination computer.
-- Automatic import of arbitrary shell functions is not a confirmed requirement.
+Existing profiles cannot be overwritten with different settings during setup; create another named profile. Renaming and an interactive profile editor are not included. Stored profiles do not imply that their models fit concurrently in RAM. Shared source updates and rollback references remain visible through [Maintenance](maintenance.md) and [Uninstallation and storage](uninstall-and-storage.md).
 
 ## Delivery evidence
 
-None. Profile storage, selection, execution, export/import, repository defaults, and shell completion are not implemented.
+Profile validation, import/export, conflict handling, defaults, and completion are covered by automated tests. Multiple live Mac profiles reused installed tools and model layers.

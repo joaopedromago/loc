@@ -1,59 +1,37 @@
 # Product scope
 
-State: not implemented
+State: partially implemented
 
-This document records confirmed intent and proposed boundaries. The user has not yet approved the complete documentation set.
+## Confirmed intent
 
-## Purpose
+loc manages local coding-agent environments through named profiles. The user authorized implementation on 2026-09-25 after the documentation phase. Windows, Linux, and macOS remain target platforms; Python 3.11+ is the selected implementation language.
 
-Provide a CLI that makes local coding-agent environments easy to set up, launch, and maintain across computers.
+The CLI covers hardware inspection, model recommendations, installation, setup, launch, updates, diagnostics, portability, and removal. It must reuse existing installations and model weights, preserve unrelated configuration, and reduce unnecessary context while retaining useful coding quality.
 
-The intended user currently manages agent launchers through shell aliases and functions, with separate scripts for model updates. The product should replace that recurring manual configuration with simple commands and reusable profiles.
+The user selected Claude Code pointing to a locally served Qwen Coder model as the recommended setup. Model size and context must remain hardware-aware. This preference does not remove other supported agents/models or establish a universal quality ranking.
 
-## Confirmed requirements
+## Delivered behavior
 
-- Focus exclusively on coding-agent environments.
-- Support multiple named profiles, including different agents paired with different models.
-- Detect the computer's configuration and recommend suitable models for coding work.
-- Configure local coding agents to reduce unnecessary context and token use while aiming for high coding quality on machines with limited memory. See [Resource efficiency](resource-efficiency.md).
-- Set up the dependencies and configuration needed to use the selected coding agent locally.
-- Automatically identify and reuse existing installations of every supported technology. Never install a duplicate or reinstall an existing component during setup. See [Dependency detection and reuse](dependency-reuse.md).
-- Install required tools and download the selected models through the CLI where supported, including setups such as Ollama with a Qwen model.
-- When CLI installation is unavailable, open the relevant installation page in a browser and wait for the user to complete installation and confirm before continuing setup.
-- Launch coding agents with convenience comparable to existing aliases.
-- Update models when needed.
-- Provide an easy way to install loc itself and keep it updated on users' machines. See [Installing and updating loc](distribution-and-updates.md).
-- Support resumable setup, download and disk-space estimates, and an optional preview of intended changes.
-- Verify complete coding profiles, show actual runtime status, and generate diagnostic reports with sensitive information removed. See [Diagnostics and recovery](diagnostics-and-recovery.md).
-- Support profile export/import, repository-specific default profiles, and shell completion. See [Profiles](profiles.md).
-- Make local inference destinations explicit, prevent unexpected cloud fallback, and support verified offline operation for compatible environments. See [Local inference and offline operation](local-and-offline.md).
-- Track installation ownership and storage usage, provide controlled cleanup, and allow users to uninstall supported components and loc itself while accounting for shared dependencies. See [Uninstallation and storage](uninstall-and-storage.md).
-- Target Windows, Linux, and macOS.
-- Consider Python as the preferred starting language while leaving alternatives open.
-- Complete and review these static files before planning the application.
+The package implements profiles pairing Claude Code, OpenCode, or Aider with Ollama. Commands cover setup/resume and previews, launch, model recommendations, verification, status, profile import/export, repository defaults, shell completion, model update/rollback, component installation/update/uninstall, storage cleanup, and loc self-management.
 
-## Existing workflow as context
+Ollama configuration aliases reuse content-addressed weight layers. Agent settings are scoped to each launch. A local gateway restricts inference to the selected installed model. Supported macOS offline launches add operating-system network enforcement.
 
-The inspected local setup uses Ollama with Claude Code, OpenCode, and Aider. Launchers select Qwen or GLM models and sometimes define context limits or agent-specific settings. A shell script pulls a fixed model list and recreates a custom model configuration.
+See [Implementation and verification](implementation-and-testing.md) for architecture and observed evidence; each capability document defines its remaining limits.
 
-This is background for the problem, not a requirement to reproduce every existing flag or support every tool in the first release. The existing machine's paths and hardware must not become product assumptions.
+## Boundaries
 
-## Scope boundaries
+- Coding agents are the entire product focus. General chat, image/audio generation, training, and fine-tuning are outside this scope.
+- loc integrates existing agents and runtimes; it does not implement their reasoning loops or replace their permissions.
+- No GUI, hosted inference, or multi-machine orchestration is included.
+- Exact model artifacts and compatibility matter; a model-family name is not a guarantee of availability or quality.
+- Setup installs only components established to be absent within supported detection coverage. Unknown or conflicting installations remain pending.
+- When an eligible component needs manual installation, loc opens its official page and waits for explicit completion confirmation, then rechecks availability.
+- Installation, model updates, component updates, and loc self-updates remain distinct operations.
 
-The coding-agent focus excludes general chat products, image or audio generation, and unrelated AI workloads.
+## Remaining work
 
-The following additional boundaries are proposed for review:
-
-- Integrate existing coding agents and inference runtimes.
-- Leave the agent's reasoning loop, repository edits, and execution permissions to the selected agent.
-- Keep training, fine-tuning, runtime development, and multi-machine orchestration outside the initial scope.
-- Keep a graphical interface and hosted inference outside the initial local CLI scope.
-- Do not promise support for every model, accelerator, or agent on every platform.
-
-## Intended outcome
-
-A user can obtain the required tools and models, configure several local coding profiles on a supported computer, launch any profile inside a repository, and maintain those profiles through simple commands. Setup should guide the user through both automated installation and any required manual installation steps.
+Native Windows/Linux validation, future runtime adapters, public release deployment, and broader quality/performance measurements remain incomplete. Existing installations and model artifacts were preserved during local development.
 
 ## Delivery evidence
 
-None. This repository currently contains static documentation and repository hygiene files only.
+Python package, CLI, automated tests, and live Mac coding checks. See [Implementation and verification](implementation-and-testing.md).

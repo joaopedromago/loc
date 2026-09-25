@@ -1,0 +1,84 @@
+# Implementation and verification
+
+State: partially implemented
+
+## Authorization and architecture
+
+On 2026-09-25 the user authorized implementation of the documented scope and testing on their Mac. Windows and Linux testing will also be performed by the user. Implementation choices below follow that authorization; they do not imply a published release.
+
+loc is a Python 3.11+ package with no runtime dependencies. Its console command is `loc`; the distribution name is `loc-coding`. The package uses the standard library for argument parsing, HTTP, subprocess management, atomic JSON state, and platform locks.
+
+The first supported runtime is Ollama. Agent adapters cover Claude Code 2.x, OpenCode 1.x/2.x, and Aider. Optional helpers are RTK and llmfit. Other runtimes in [Technology candidates](technology-candidates.md) remain future integrations.
+
+## Components
+
+| Module | Responsibility |
+| --- | --- |
+| `core.py` | Validated profiles, state, locks, project defaults, and redaction |
+| `discovery.py` | Existing executables, installer records, ownership, and explicit registration |
+| `install.py` | Reuse, installer routes, manual completion, component update/uninstall, runtime startup |
+| `ollama.py` | Local runtime API, model inventory, shared-layer configuration aliases |
+| `gateway.py` | Session inference restricted to the selected local model and context |
+| `agents.py` | Agent configuration, argument forwarding, sessions, and disposable editing verification |
+| `lifecycle.py` | Setup recovery, model updates, rollback, references, removal, and cleanup |
+| `hardware.py` | Hardware inspection and clearly labeled model-fit estimates |
+| `offline.py` | macOS runtime/agent network sandboxes; unsupported combinations fail closed |
+| `distribution.py` | Release checksum validation and updates/uninstall through the original owner |
+
+No command edits the user's shell aliases. Generated agent configuration is temporary. Persistent user state lives outside the repository, with `LOC_HOME` or `--home` available for isolated testing.
+
+## Automated checks
+
+Run from the checkout:
+
+```sh
+python3 -m unittest discover -v
+python3 scripts/check_docs.py
+python3 -m loc_cli --help
+```
+
+The tests cover actual local HTTP fixtures, duplicate prevention, ambiguous/broken installations, state corruption, competing processes, dry runs, interrupted downloads, profile portability, model identity drift, network restrictions, shared-resource cleanup, failed updates, rollback, and release checksums. Installer and destructive component actions use fixtures. They do not uninstall the developer's existing AI environment.
+
+The complete suite passed 112 tests on both installed Python 3.14 and Python 3.12. Documentation state/link checks and `git diff --check` also passed.
+
+Recommendation regressions cover the user-selected Claude Code + local Qwen Coder default, memory limits, installed custom aliases, unreadable/hosted metadata, interactive selection, and preservation of existing agent/model choices. A read-only CLI check on the Mac selected an existing Qwen Coder alias for Claude and left the model inventory and profile state unchanged.
+
+GitHub Actions defines a Python 3.11/3.14 matrix across macOS, Windows, and Linux. A workflow file is not evidence that hosted jobs have run. No workflow has been dispatched or release published during this implementation.
+
+## Live Mac verification
+
+The inspected machine has Apple Silicon and 64 GiB of unified memory. Existing Ollama 0.34.3, Claude Code 2.1.278, OpenCode 2.0.11, and Aider 0.86.2 were reused.
+
+Verified with disposable file edits:
+
+- Claude Code with installed Qwen3 4B.
+- OpenCode 2 with installed Qwen3 4B.
+- Aider with installed Qwen3 4B.
+- OpenCode 2 with the user's existing Qwen3.8 Q8 64K configuration.
+- Aider with Qwen3 4B inside the macOS offline sandbox.
+- Claude Code with Qwen3 4B inside the macOS offline sandbox.
+
+The network test checks the agent and a child process: the gateway port is reachable; external addresses and unrelated local ports are blocked. Original model digests and `.zshrc` were checked before and after live tests and preserved. Test configuration aliases share existing weight blobs and are tracked in ignored `.tmp/` test state.
+
+The package was built and installed into an isolated environment using the existing interpreter. Repeating installation made no changes. Self-uninstallation removed the test package and preserved saved profiles byte-for-byte. Release downloads and installer failures are exercised with fixtures.
+
+Repeat a live integration check only when you intend to load the selected installed model:
+
+```sh
+python3 scripts/smoke_local.py --model qwen3:4b
+python3 scripts/smoke_local.py --model qwen3:4b --agents aider --offline
+```
+
+The script creates configuration aliases and retains its test state for inspection. It never downloads model weights or removes original models. A successful small edit is evidence of basic integration, not a coding benchmark or a guarantee against every failure.
+
+## Remaining verification
+
+- Native Windows/Linux runs, OS-specific installer/uninstaller behavior, and additional hardware.
+- OpenCode 1 live integration; its adapter has configuration tests.
+- Production release publishing and first installation from real release assets.
+- Fresh-machine installation routes: existing software was deliberately preserved on this Mac.
+- Representative coding-quality, token-efficiency, latency, and peak-memory comparisons. Unmeasured values remain unknown.
+
+## Delivery evidence
+
+Source, tests, packaging, installer scripts, and workflow definitions are in the repository. Local test outcomes above were observed on 2026-09-25. Detailed capability limits remain in the linked documents.

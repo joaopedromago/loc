@@ -1,51 +1,34 @@
 # Local inference and offline operation
 
-State: not implemented
+State: partially implemented
 
-## Confirmed scope
+## Local inference
 
-The user approved explicit local inference and offline behavior, visible request destinations, and prevention of unexpected cloud fallback.
+loc accepts loopback HTTP runtime endpoints only. It verifies local weights and completion capability, rejects cloud-marked or remotely hosted models, and pins the resolved model digest. A per-session gateway exposes only the selected model and inference/metadata routes. It blocks management, web-search, alternate models, and runtime redirects; it does not inherit HTTP proxies.
 
-Local inference means that model execution happens on the selected local runtime. Full offline operation also restricts network use by loc, the selected agent, the runtime, and their tools. Local process communication remains necessary and is distinct from external network access.
+Agent configuration points model roles at that gateway. Unexpected cloud fallback is not configured. Provider/model overrides in launch arguments are rejected. Normal local inference still permits the coding agent's tools to use the network; local model execution is not a promise that every tool is offline.
 
-## Local inference behavior
-
-- Show the configured runtime destination and model identity so the user can inspect where inference requests are directed.
-- Configure supported agent and runtime controls to use the selected local model.
-- Never substitute a cloud model when the local model is unavailable, too slow, or unable to fit in memory.
-- Report conflicting provider configuration or an unverifiable destination before claiming that a profile uses local inference.
-- Keep intentional downloads, update checks, and agent network tools distinguishable from model inference traffic.
-
-## Offline behavior
-
-- Provide an explicit offline mode for supported combinations of agents, runtimes, and operating systems.
-- Reuse installed dependencies, downloaded models, and locally available metadata.
-- Do not perform external update checks, downloads, catalog refreshes, telemetry, or automatic browser installation steps while offline mode is active.
-- Configure or restrict the selected agent's and runtime's external network capabilities, including tools and child processes, to the extent required for the promised offline behavior.
-- If a required dependency or artifact is unavailable locally, identify it and leave that operation pending rather than silently going online.
-- If the combination cannot provide verified offline behavior, report it as unsupported. Do not label a profile fully offline solely because its model endpoint is local.
-
-## Integration constraints
-
-Some provider controls affect an entire shared runtime. Applying an offline profile must account for other sessions and must not silently restart or reconfigure unrelated workloads.
-
-Ollama documents a setting to disable its cloud models and web search. That control is useful evidence for a runtime integration, but does not establish that the selected coding agent or its subprocesses cannot access the network. [Ollama cloud controls](https://docs.ollama.com/faq)
-
-## Illustrative command
-
-The syntax is proposed and not implemented:
+## Enforced offline mode
 
 ```sh
-loc run claude-next --offline
+loc run daily --offline
+loc doctor daily --verify --offline
 ```
 
-## Limits and open decisions
+The current enforced implementation supports Claude Code and Aider on macOS using `sandbox-exec`. It starts a private Ollama process reading the existing weight store, with external networking denied and model-file writes denied. The agent and its children may connect only to the session gateway. No existing runtime is restarted or reconfigured. The private runtime is stopped when the session finishes.
 
-- Supported enforcement and verification mechanisms depend on the platform and agent. No mechanism has been selected.
-- Provider redirects, external endpoints, inherited settings, and agent startup behavior need to be included in compatibility checks.
-- Network-dependent coding tasks may be unavailable offline; the limitation must be explicit rather than hidden by an online fallback.
-- This scope does not introduce hosted inference or multi-machine inference as product features.
+Missing local models or an unknown storage directory fail without downloading. Set `OLLAMA_MODELS` to an existing nonstandard store when necessary. Offline setup, catalog refresh, and updates never silently go online; network-dependent operations remain pending or fail explicitly.
+
+OpenCode offline execution and Windows/Linux offline enforcement are unsupported in this release and fail closed. `sandbox-exec` availability is checked; failure to establish the sandbox is not treated as success.
+
+## Limits
+
+A private runtime can require additional resident memory if another runtime already has the model loaded, even though disk weights are shared. loc does not unload another session's models to free memory. Agent network tools are unavailable in offline mode. Loopback runtime control and internal worker communication remain necessary.
+
+The gateway and OS controls address supported local inference paths. This is not a general adversarial containment system for arbitrary third-party extensions. macOS's sandbox interface is platform-specific and must be revalidated as operating systems change.
+
+Ollama's cloud-disable setting alone does not prove an agent is offline; loc combines runtime configuration with OS restrictions. [Ollama cloud controls](https://docs.ollama.com/faq)
 
 ## Delivery evidence
 
-None. Local-destination verification, cloud-fallback prevention, and offline enforcement are not implemented.
+A macOS test verifies that the agent and a child process reach the gateway but cannot connect externally or to unrelated local ports. Both Aider and Claude Code completed live file edits inside the offline environment. Additional agent/platform coverage remains open.

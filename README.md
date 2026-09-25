@@ -1,91 +1,98 @@
 # loc
 
-A CLI for setting up, launching, and maintaining local coding-agent environments.
+Set up, run, and maintain local coding-agent environments from one CLI.
 
-State: not implemented
+State: partially implemented
 
-The project is in the documentation review phase. There is no installable application or working CLI yet. `loc` is the working project name; command syntax and technical choices remain open.
+loc pairs **Claude Code, OpenCode, or Aider with Ollama** in named profiles. It detects existing tools, reuses model weights, configures local inference, and manages updates and removal. Python 3.11+ is required; loc has no runtime package dependencies.
 
-## Purpose
+The recommended setup is **Claude Code pointing to a local Qwen Coder model through Ollama**. Model size and context depend on the machine's memory. Other agents and models remain available through explicit selection.
 
-Local coding setups often spread across shell aliases, environment variables, model settings, and update scripts. loc aims to bring these into named profiles that are easy to configure and use on another computer.
+The CLI is implemented and tested on an Apple Silicon Mac. Windows/Linux adapters and CI definitions are present; native validation on those systems is pending. There is no published release yet.
 
-The focus is coding agents. The intended experience covers installing the required tools, choosing models suited to the computer, launching agents inside repositories, and keeping their configurations usable as models change.
-
-## Intended capabilities
-
-- **Multiple profiles:** keep different agent and model combinations available on the same machine.
-- **Automatic reuse:** detect existing tools and model artifacts across supported installation channels. Never reinstall an existing component during setup or create a duplicate; leave installation pending if detection is uncertain.
-- **Guided installation:** install required agents, runtimes, and selected models through the CLI where supported. Otherwise, open the official installation page and wait for the user to complete installation and confirm.
-- **Hardware-aware recommendations:** help select coding models and configurations that suit available hardware and the chosen agent.
-- **Efficient local operation:** reduce unnecessary context and token use while aiming for high coding quality within limited memory.
-- **Simple launching and maintenance:** start a selected profile and update its models through a small set of commands.
-- **Easy loc installation and updates:** provide a straightforward installation route and keep the CLI updated through its original installation channel.
-- **Recoverable setup and diagnostics:** preview changes, estimate downloads and disk space, resume interrupted setup, verify profiles, and inspect actual runtime status.
-- **Portable daily workflows:** export/import profiles, select repository defaults, and complete profile names in the shell.
-- **Explicit local and offline operation:** show inference destinations, prevent unexpected cloud fallback, and provide offline mode for verified combinations.
-- **Storage and uninstallation:** show resource ownership and usage, clean selected unused artifacts, and uninstall supported components or loc while accounting for shared dependencies.
-- **Cross-platform support:** target Windows, Linux, and macOS. Exact platform and hardware coverage is still undecided.
-
-These are product intentions, not shipped features. [Product scope](Docs/product-scope.md) records the confirmed requirements and boundaries.
-
-## Profiles
-
-A profile combines a coding agent, model, and the settings needed to run them together. For example:
-
-| Profile | Agent | Model family |
-| --- | --- | --- |
-| `claude-next` | Claude Code | Qwen3-Coder-Next |
-| `opencode-qwen` | OpenCode | Qwen3.8 |
-| `claude-glm` | Claude Code | GLM-4.7-Flash |
-
-These combinations illustrate the requested experience. Exact model artifacts and compatibility are not yet validated.
-
-Profiles must reuse existing tools and compatible model artifacts. Proposals include a default profile and profile-specific context and launch settings. Settings that affect a shared runtime need separate handling. See [Profiles](Docs/profiles.md).
-
-## Illustrative usage
-
-The following commands are proposals and are not executable in this repository:
+## Start from this checkout
 
 ```sh
-# Create profiles interactively or specify an agent and model
-loc setup
-loc setup claude-next --agent claude --model qwen3-coder-next
-loc setup opencode-qwen --agent opencode --model qwen3.8
-
-# Inspect and launch profiles
-loc profiles
-loc run claude-next
-loc run opencode-qwen
-
-# Check for updates and diagnose the environment
-loc update --check
-loc update claude-next
-loc doctor
+python3 -m loc_cli --help
+python3 -m loc_cli scan
+python3 -m loc_cli models recommend
 ```
 
-The model strings are illustrative. Final commands, installation behavior, and update semantics are documented as proposals in [Setup and launch](Docs/setup-and-launch.md) and [Maintenance](Docs/maintenance.md).
+To install the `loc` command using your existing Python and tool manager:
 
-## Efficiency and coding quality
+```sh
+python3 scripts/install.py --source . --dry-run
+python3 scripts/install.py --source .
+```
 
-The aim is successful coding work within the computer's limits. Candidate techniques include loading relevant code on demand, compacting noisy command output, managing conversation history, and selecting model and context settings together.
+The installer reuses existing uv/pipx when available, otherwise creates a venv sharing the existing interpreter. It does nothing if loc is already installed. It prints the command location and does not modify shell files.
 
-Token use, memory consumption, responsiveness, and correctness need to be evaluated together. Lower token counts alone do not demonstrate better results or proportionally lower RAM usage.
+## Daily workflow
 
-Optional RTK integration, repository maps, native agent compaction, and runtime tuning remain proposals. Their tradeoffs and supporting references are recorded in [Resource efficiency](Docs/resource-efficiency.md).
+Use an exact model tag available through Ollama, or a model already installed on your machine:
 
-## Documentation and current status
+```sh
+loc models recommend
+loc setup daily --model qwen3-coder:30b --dry-run
+loc setup daily --model qwen3-coder:30b
+loc doctor daily --verify
+loc run daily
+loc run daily -- --continue
 
-The [documentation index](Docs/README.md) is the source of truth for detailed intent, limits, and implementation states. It links the profile, setup, recommendation, efficiency, maintenance, and platform documents.
+loc setup open-coder --agent opencode --model qwen3-coder:30b
+loc profiles
+loc use open-coder --project
+loc run
+```
 
-Capability documents use `implemented`, `partially implemented`, or `not implemented`. All application capabilities currently remain `not implemented`.
+New profiles default to Claude Code; existing profiles keep their selected agent. Interactive `loc setup` offers a fitting Qwen Coder model as the suggested choice. The 30B tag above is an example: check `loc models recommend` for your machine before setup. If no compatible Qwen Coder model fits the estimate, loc asks for an explicit alternative. Noninteractive setup requires an exact `--model`.
 
-Python is the preferred language candidate, and Ollama is an initial runtime candidate. The implementation language, dependencies, architecture, supported integrations, and delivery sequence have not been selected.
+The preferred pairing follows the project's chosen default, not a comparative benchmark. Recommendations label estimated fit and unmeasured performance. Qwen3 4B is used for small integration tests and remains an optional alternative.
 
-See [Technology candidates](Docs/technology-candidates.md) for the proposed support list and [Dependency detection and reuse](Docs/dependency-reuse.md) for the installation rules that apply to every supported technology.
+Profiles use shared-layer Ollama configuration aliases, with session-scoped agent settings and a local model-restricted gateway. Existing shell aliases, global agent configuration, and original model references are preserved.
 
-[Installing and updating loc](Docs/distribution-and-updates.md) describes the proposed GitHub release services and installation/update experience. No installer or published package is available yet.
+## Setup, maintenance, and removal
 
-[Diagnostics and recovery](Docs/diagnostics-and-recovery.md), [Local inference and offline operation](Docs/local-and-offline.md), and [Uninstallation and storage](Docs/uninstall-and-storage.md) describe the newly approved usability and lifecycle scope.
+```sh
+loc setup daily --resume
+loc status
+loc doctor --report
+loc update daily --check
+loc update daily
+loc rollback daily
+loc update --component opencode --dry-run
 
-Review the [pending decisions](Docs/review-and-decisions.md) before application planning begins. Repository contributors and coding agents should follow [AGENTS.md](AGENTS.md).
+loc profile export daily --file daily.json
+loc profile import daily.json --name imported-daily
+loc setup imported-daily --resume
+loc completion zsh
+
+loc storage
+loc clean --dry-run
+loc uninstall agent opencode --dry-run
+loc uninstall model qwen3:4b --dry-run
+loc profile remove daily --dry-run
+loc self update --check
+loc self uninstall --dry-run
+```
+
+Setup never reinstalls an existing component as a repair shortcut. Missing PATH entries, broken installs, multiple copies, and inaccessible records remain explicit detection states. `loc register COMPONENT PATH` selects an existing custom installation. Removing a profile keeps its software and model weights; destructive operations show shared references and preserve unrelated data.
+
+Commands support `--json`. `LOC_HOME` or global `--home PATH` selects isolated state. Use `--yes` only when applying the chosen operation noninteractively. `loc clean` previews by default; `--apply` performs cleanup.
+
+## Local and offline behavior
+
+Normal launches keep model inference local, while agent tools may still use the network. `loc run NAME --offline` adds OS enforcement for Claude Code/Aider on macOS. OpenCode and Windows/Linux offline combinations currently fail as unsupported. Offline mode uses a private runtime reading existing weights; it may need extra RAM alongside other sessions.
+
+## Testing and limits
+
+```sh
+python3 -m unittest discover -v
+python3 scripts/check_docs.py
+```
+
+The 112-test suite passed on the Mac with Python 3.12 and 3.14. It covers duplicate prevention, state/locking, setup recovery, gateway restrictions, agent settings, portable profiles, updates/rollback, shared-resource cleanup, and distribution integrity. Live checks exercised all three agents, the existing Qwen3.8 64K profile, and offline Claude Code/Aider. Original model digests and `.zshrc` were preserved. No existing AI tools were uninstalled for testing.
+
+The first runtime adapter is Ollama. LM Studio, llama.cpp, and MLX-LM are future candidates. Model recommendations are estimates; total task tokens, peak memory, and comparative coding quality are not yet measured. Fresh-machine installers and native Windows/Linux behavior need further verification. Release-based self-update requires the first GitHub release to be published.
+
+The [Docs index](Docs/README.md) contains the full scope, implementation states, and limits. Start with [Implementation and verification](Docs/implementation-and-testing.md) for evidence, and [Installing and updating loc](Docs/distribution-and-updates.md) for release preparation. Contributors should follow [AGENTS.md](AGENTS.md).

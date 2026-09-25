@@ -1,49 +1,31 @@
 # Platforms and constraints
 
-State: not implemented
+State: partially implemented
 
-## Confirmed intent
+## Platform coverage
 
-Support Windows, Linux, and macOS. Python is the user's preferred language candidate, with alternatives explicitly allowed.
+| Area | macOS | Windows | Linux |
+| --- | --- | --- | --- |
+| Python CLI, profiles, JSON state | Locally exercised | Implementation and CI definition; native run pending | Implementation and CI definition; native run pending |
+| Installation discovery | Native paths, Homebrew, tool managers exercised | PATH/native locations/registry/tool environments; validation pending | PATH/native locations/dpkg/rpm/tool environments; validation pending |
+| Agent launch with Ollama | Claude Code, OpenCode 2, Aider live checks | Native checks pending | Native checks pending |
+| Full offline mode | Claude Code/Aider live checks | Unsupported; fail closed | Unsupported; fail closed |
+| Installer/uninstaller routes | Fixture coverage; loc package install/uninstall exercised | Fixture/command coverage; native checks pending | Fixture/command coverage; native checks pending |
 
-Setup should install required tools and download selected models through the CLI where supported. When CLI installation is unavailable for an otherwise supported component, setup must open a browser for manual installation and wait for the user's completion confirmation.
+Python 3.11+ is required for loc. Supported agent versions and their interpreter/runtime requirements are independent. Existing incompatible installations remain present; loc never obtains another copy as a shortcut.
 
-Installation is permitted only for components established to be absent. All supported technologies must automatically identify and reuse existing installations, including those installed outside loc. See [Dependency detection and reuse](dependency-reuse.md).
+## Shared conventions
 
-## Proposed compatibility boundaries for review
+User state is separate from package files: macOS Application Support, Windows LOCALAPPDATA, or Linux XDG state paths. `LOC_HOME` or `--home` overrides it for testing. File replacement is atomic and mutation locks use platform-native facilities. Imported profiles contain no machine paths or executable instructions.
 
-- Keep user-facing profile and launch behavior consistent across supported platforms.
-- Account for platform-specific paths, terminal behavior, dependency installation, and runtime startup.
-- Record installation coverage separately from runtime compatibility: a supported component may require manual installation on one platform and allow CLI installation on another.
-- Identify supported operating system, architecture, runtime, and accelerator combinations explicitly.
-- Detect unsupported combinations and explain the limitation instead of claiming successful setup.
-- Account for shared memory on relevant systems and separate system memory and accelerator memory where applicable.
-- Avoid embedding the original developer's home directory, shell, or hardware into product behavior.
-- Preserve existing installations and unrelated user configuration.
-- Keep credentials, local state, model weights, and caches outside tracked source files.
+Installation, update, browser availability, executable resolution, process inspection, and privileges vary by platform. Privilege errors remain actionable failures; loc does not silently escalate or declare success. Unsupported hardware/agent/runtime combinations must be explicit.
 
-## Candidate technologies, not decisions
+## Remaining limits
 
-- Python for the CLI and environment coordination.
-- Ollama as an initial inference runtime.
-- Claude Code, OpenCode, and Aider as agent integration candidates.
-- Existing hardware inspection and model recommendation tools as possible dependencies.
+Native Windows versus WSL is not interchangeable. WSL, containers, and other users' hidden environments are outside exhaustive discovery coverage; register custom locations or resolve uncertainty before installation. Minimum supported OS versions, AMD/Intel accelerator behavior, additional CPU architectures, shell completion activation, and native package lifecycle behavior need platform testing.
 
-These candidates come from the user's existing workflow and earlier discussion. No dependency, architecture, package manager, configuration format, or distribution method is selected in this phase.
-
-[Technology candidates](technology-candidates.md) records the recommended integration scope, optional helpers, and additional runtimes for review.
-
-[Installing and updating loc](distribution-and-updates.md) evaluates GitHub distribution and an optional Python/uv installation route. Packaging and infrastructure remain proposals.
-
-## Limits and open decisions
-
-- Cross-platform intent does not mean that every GPU or agent is supported on every operating system.
-- Minimum OS versions, CPU architectures, supported accelerators, CPU-only behavior, and initial support coverage remain undecided.
-- Native Windows versus WSL support requires an explicit decision.
-- Packaging, dependency versions, and installation privilege handling remain undecided. Offline operation is confirmed scope; supported combinations and enforcement mechanisms remain open. See [Local inference and offline operation](local-and-offline.md).
-- Browser availability, terminal environment refresh after installation, and installation verification need platform-specific handling; the exact mechanisms remain undecided.
-- Support claims must eventually be backed by checks on the relevant platform; documentation alone is not evidence of support.
+No support claim follows merely from a Python branch or workflow definition. The current evidence is listed in [Implementation and verification](implementation-and-testing.md).
 
 ## Delivery evidence
 
-None. No language toolchain, platform adapters, dependencies, packaging, or support matrix has been implemented.
+Mac runtime, package, network-sandbox, and coding-agent checks passed. Portable state and platform-specific branches have automated fixture coverage. Windows/Linux native verification remains pending as requested by the user.

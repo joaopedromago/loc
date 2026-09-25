@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "loc-coding"
+version = "0.1.0"
+description = "Set up and maintain local coding-agent environments"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{name = "loc contributors"}]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.scripts]
+loc = "loc_cli.cli:main"
+
+[project.urls]
+Repository = "https://github.com/joaopedromago/loc"
+
+[tool.setuptools.packages.find]
+include = ["loc_cli*"]
+
+[tool.setuptools.package-data]
+loc_cli = ["catalog.json"]

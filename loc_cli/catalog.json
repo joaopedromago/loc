@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "updated": "2026-09-25",
+  "models": [
+    {"model": "qwen3:4b", "bytes": 2497293931, "context": 32768, "coding_priority": 1, "tools": true, "source": "https://ollama.com/library/qwen3"},
+    {"model": "qwen2.5-coder:7b", "bytes": 4700000000, "context": 32768, "coding_priority": 2, "tools": false, "source": "https://ollama.com/library/qwen2.5-coder"},
+    {"model": "qwen3-coder:30b", "bytes": 19000000000, "context": 65536, "coding_priority": 4, "tools": true, "source": "https://ollama.com/library/qwen3-coder"},
+    {"model": "glm-4.7-flash:q8_0", "bytes": 31843415736, "context": 65536, "coding_priority": 4, "tools": true, "source": "https://ollama.com/library/glm-4.7-flash"},
+    {"model": "qwen3-coder-next:latest", "bytes": 51741611577, "context": 65536, "coding_priority": 5, "tools": true, "source": "https://ollama.com/library/qwen3-coder-next"},
+    {"model": "qwen3.8:27b-mtp-q8_0", "bytes": 29978242090, "context": 65536, "coding_priority": 4, "tools": true, "source": "https://ollama.com/library/qwen3.8"}
+  ]
+}

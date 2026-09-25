@@ -1,63 +1,36 @@
 # Diagnostics and recovery
 
-State: not implemented
+State: partially implemented
 
-## Confirmed scope
-
-The user approved resumable setup, download and disk-space estimates, an optional change preview, complete profile verification, runtime status, and diagnostic reports. These extend the setup and diagnostic capabilities already in scope.
-
-Exact command syntax, implementation mechanisms, and platform coverage remain undecided.
-
-## Setup visibility and recovery
-
-- Show the components already available, the ones still needed, and the changes setup would make.
-- Estimate download size and required free disk space, including temporary files and retained versions during updates. Label unavailable or approximate values.
-- Provide an optional dry run that reports intended changes without installing software, changing configuration, starting services, or downloading models.
-- Preserve completed setup steps when installation is interrupted. Recheck actual installation state before continuing so resumed setup obeys [Dependency detection and reuse](dependency-reuse.md).
-- Resume partial downloads where the provider supports it. Where it does not, explain the restart and reuse already completed artifacts.
-- Report progress and cancellation clearly. Interrupted work must not be marked complete or leave a profile presented as ready.
-- Preserve the existing working configuration when a replacement fails and report any partial changes that still require attention.
-
-## Profile verification
-
-Diagnostics must cover the selected agent, runtime connection, exact model, usable context, and relevant editing capabilities. Checking that executables exist is not sufficient to demonstrate a working profile.
-
-Provide a verification action that exercises a small coding task in a disposable directory. It should check the selected agent's tool or edit protocol and confirm that the requested edit occurred. The check must not modify the user's repository.
-
-Distinguish basic inspection from verification that loads a model and performs inference. Show whether each check passed, failed, was skipped, or could not be measured. A successful small task demonstrates basic compatibility, not general coding quality.
-
-## Status
-
-Expose the selected profile, requested and observed model identities, runtime endpoint, loaded models, and available memory information. Include agent and runtime versions where detectable.
-
-Distinguish observed values, estimates, and unknowns. Report differences between a profile's expected configuration and the actual environment, including changed model references or missing dependencies. Reading status should not load a model or change the environment merely to fill in missing values.
-
-## Diagnostic reports
-
-Allow users to produce a report suitable for troubleshooting or filing an issue. Remove credentials, authentication headers, sensitive environment values, repository content, and unnecessary identifying paths.
-
-Users must be able to inspect the report before choosing to share it. Generating a report does not upload it. Diagnostics should report the useful failure and affected component without embedding unrestricted command output or configuration files.
-
-## Illustrative commands
-
-These commands are proposals, not implemented interfaces:
+## Delivered behavior
 
 ```sh
-loc setup --dry-run
-loc setup --resume
-loc doctor claude-next --verify
+loc setup daily --dry-run
+loc setup daily --resume
+loc doctor daily
+loc doctor daily --verify --timeout 240
 loc doctor --report
 loc status
 ```
 
-## Limits and open decisions
+Setup previews show reused/missing components, installation routes, model actions, catalog download estimates, available disk space, and estimated temporary space. Unknown sizes are labeled. Resume rechecks real state, keeps completed installations/downloads, and leaves interrupted profiles pending. Provider-supported layer continuation is used; otherwise the provider may restart a partial transfer.
 
-- Download continuation depends on the provider; resuming setup must still work when a particular download must restart.
-- Verification tasks, timeouts, report format, and redaction rules remain undecided.
-- Hardware and runtime statistics may be unavailable on some platforms; missing data must not be replaced with invented measurements.
-- Offline behavior is governed by [Local inference and offline operation](local-and-offline.md).
-- Recovery must not reinstall an existing component or silently switch installation channels.
+Basic doctor checks inspect agent version, runtime reachability, exact model identity, local completion capability, and configured context. `--verify` loads the selected model and asks the selected agent to repair a tiny Python function in a disposable directory. It checks the actual resulting syntax without executing model-written code. Success requires an edit, a successful process exit, and observed local inference.
+
+Verification restricts its editing task and isolates agent caches/configuration. It reports failure, timeout, skipped checks, and unknown measurements separately. Verification timeouts terminate only the process tree loc started. Normal agent sessions preserve interactive terminal behavior.
+
+## Status and reporting
+
+Status exposes requested and observed model identities, drift, local endpoints, loaded model information, runtime versions, hardware memory snapshots, and known loc sessions. Reading status never loads models just to fill missing values.
+
+Reports allowlist diagnostic fields and remove sensitive values and home-directory identification. They do not include environment dumps, credentials, repository content, or unrestricted subprocess logs. A report is written locally, never uploaded. Existing report files are not overwritten; inspect one before sharing.
+
+## Limits
+
+A single editing task demonstrates basic integration, not general coding quality. Context capacity and artifact bytes are distinct from observed resident memory. Total task tokens and peak process-tree memory are currently unavailable and reported as unknown. Diagnostic text deliberately omits raw agent output; the opt-in development smoke script can retain local test logs.
+
+Memory availability varies by platform. Download estimates exclude unknown installer sizes and may not match a custom runtime storage volume. Native Windows/Linux verification remains pending.
 
 ## Delivery evidence
 
-None. Setup previews, recovery, profile verification, status inspection, and diagnostic reports are not implemented.
+Fixture tests cover interrupted setup and diagnostic failure paths. Live editing checks and environment preservation are recorded in [Implementation and verification](implementation-and-testing.md).

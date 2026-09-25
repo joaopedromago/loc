@@ -1,55 +1,33 @@
-# Technology candidates
+# Supported technologies and candidates
 
-State: not implemented
+State: partially implemented
 
-## Purpose
+## Initial integrations
 
-Record the recommended support scope for user review. This is a candidate list, not an approved support matrix, implementation plan, or commitment to install every listed technology.
-
-Every candidate is subject to [Dependency detection and reuse](dependency-reuse.md). Setup should obtain only missing components required by the chosen profiles. Supporting a technology must include recognizing existing installations, not just providing an installation command.
-
-## Recommended initial candidates
-
-| Category | Candidates | Reason to evaluate |
+| Technology | Delivered role | Installation/update/removal boundary |
 | --- | --- | --- |
-| Inference runtime | Ollama | Matches the existing workflow and provides model management and documented coding-agent integrations. |
-| Coding agents | Claude Code, OpenCode, Aider | Covers the user's existing workflows and the requested agent/model combinations. |
-| Model catalog | Selected Qwen coding and GLM configurations | Matches the requested examples while keeping compatibility validation bounded to exact artifacts and settings. |
-| Optional output helper | RTK | Candidate for reducing noisy command output where agent integration is supported. |
-| Optional hardware advisor | llmfit | Candidate for hardware inspection and model-fit recommendations. |
-| Supporting dependencies | Git, plus Python/uv or Node.js when required by a chosen installation route | Obtain only dependencies needed for that profile and reuse any existing compatible installation. |
+| Ollama | Local model inventory, pull, shared-layer configuration, serving, update/rollback, removal | Reuse native installs; Homebrew cask on macOS, WinGet on Windows, official Linux installer, manual fallback |
+| Claude Code 2.x | Local Anthropic-compatible launch and editing verification | Reuse native/npm/manager installs; supported native or manager routes; manual uninstall when no verified owner route exists |
+| OpenCode 1.x / 2.x | Version-specific local configuration, compaction, launch, verification | Native installer or WinGet; original owner updates; native uninstall keeps configuration/data |
+| Aider | Local Ollama chat, repository-map/context budgets, verification | Reuse or install with existing uv/pipx and compatible existing Python; owner-specific update/uninstall |
+| RTK | Optional installation/reuse and concise command-output guidance | Homebrew where supported, otherwise official manual route; no global hook rewrite |
+| llmfit | Optional installation/reuse | Homebrew where supported, otherwise official manual route; recommendation engine does not require it |
+| Git, Python, uv, pipx, Node.js | Discover supporting tools and reuse them where needed | No install-all bundle, no implicit extra Python downloads, no substitute-channel recovery |
 
-Ollama documents integrations for [Claude Code](https://docs.ollama.com/integrations/claude-code) and [OpenCode](https://docs.ollama.com/integrations/opencode). Aider documents its own [Ollama connection](https://aider.chat/docs/llms/ollama.html). These integrations are evidence to evaluate; they do not establish that every model works with every agent.
+Discovery must precede every route; a technology is never reinstalled just because its preferred installer differs from its current owner. Read [Dependency detection and reuse](dependency-reuse.md) for the strict rule and detection boundaries.
 
-[RTK](https://github.com/rtk-ai/rtk) and [llmfit](https://github.com/AlexsJones/llmfit) remain optional candidates. Neither is required merely because a user creates a coding profile. Their compatibility, installation reuse, and overhead need evaluation before adoption.
+Qwen and GLM are model families, not additional agent installers. Model support identifies exact Ollama artifacts and their capabilities. The catalog is a maintainable subset, not a promise to download every model or support every family member.
 
-Qwen and GLM are model families here. Support must identify exact runtime artifacts, versions or digests, quantizations, context settings, and agent compatibility. It must not imply support for every family member or a promise to download all variants.
+## Future runtime candidates
 
-## Additional candidates to evaluate later
+LM Studio/llmster through `lms`, llama.cpp, and MLX-LM are not implemented adapters. They remain candidates for later coverage, with their own discovery, model-format, context, serving, lifecycle, and platform requirements. Supporting one must not silently copy existing weights into another runtime store.
 
-| Technology | Potential role | Boundary |
-| --- | --- | --- |
-| LM Studio / llmster through `lms` | Reuse an existing local runtime or offer an alternative to Ollama | Recognize the existing installation and model inventory; do not install another runtime automatically. |
-| llama.cpp | Direct control over local model serving | Requires its own installation, backend, lifecycle, and model-artifact compatibility checks. |
-| MLX-LM | An Apple Silicon runtime option | Platform-specific support must remain explicit. |
+## Evidence and limits
 
-LM Studio's [CLI documentation](https://lmstudio.ai/docs/cli) describes model downloads, model inventory, server controls, and headless-daemon management. [llama.cpp](https://github.com/ggml-org/llama.cpp) provides local inference and server tooling. [MLX-LM](https://github.com/ml-explore/mlx-lm) provides LLM execution on Apple Silicon. These are alternatives to evaluate, not dependencies to install alongside Ollama by default.
+The Mac reused Ollama, Claude Code, OpenCode 2, and Aider and completed live coding checks. OpenCode 1 has configuration tests. Fresh installation/removal routes are tested through fixtures; native Windows/Linux checks remain pending. No support claim extends to arbitrary future major versions.
 
-## Installation channels
-
-Possible channels include official native installers and existing package managers such as Homebrew, WinGet, or the system's Linux package manager. These are installation mechanisms, not additional coding technologies every user must install.
-
-Channel selection must follow detection. For example, finding a native application must prevent a second installation through a package manager. Python tool environments and Node package installations must likewise be inspected before choosing another route. Exact channel coverage remains undecided.
-
-## Limits and open decisions
-
-- The user has not yet approved this technology list or initial coverage.
-- A runtime or agent is not supported until detection, reuse, installation fallback, configuration, launch, and relevant compatibility checks are defined and verified for the claimed platform. Update and uninstall coverage must also be explicit, including any manual routes or limitations.
-- Model recommendations must remain a curated and maintainable subset of available artifacts.
-- Browser fallback can cover missing installation automation; it cannot make incompatible software or model formats work together.
-- User-selected profiles determine needed installations. The candidate list is not an install-all bundle.
-- Ownership-detection mechanisms, update and uninstall routes, optional helper defaults, and exact agent/runtime versions remain undecided. Ownership tracking and uninstallation are confirmed capabilities; see [Uninstallation and storage](uninstall-and-storage.md).
+Official references: [Ollama Claude integration](https://docs.ollama.com/integrations/claude-code), [OpenCode 2 providers](https://opencode.ai/v2/docs/providers), [Aider Ollama](https://aider.chat/docs/llms/ollama.html), [OpenCode installer](https://opencode.ai/install), [RTK](https://github.com/rtk-ai/rtk), [llmfit](https://github.com/AlexsJones/llmfit).
 
 ## Delivery evidence
 
-None. No listed integration or installation channel is implemented by this project.
+Integration adapters, discovery/installer routes, fixture tests, and live Mac checks are recorded in [Implementation and verification](implementation-and-testing.md).

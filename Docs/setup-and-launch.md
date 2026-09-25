@@ -1,82 +1,46 @@
 # Setup and launch
 
-State: not implemented
+State: partially implemented
 
-## Confirmed intent
-
-Use simple CLI commands to set up local coding-agent environments and start the chosen agent/model profile. Setup must accommodate multiple profiles.
-
-Setup should also configure efficient local operation, reducing unnecessary context and tokens while preserving coding quality on machines with limited memory. Specific proposals and their limits live in [Resource efficiency](resource-efficiency.md).
-
-Resumable setup, download and disk estimates, optional dry runs, complete profile verification, runtime status, and diagnostic reports are now confirmed scope. See [Diagnostics and recovery](diagnostics-and-recovery.md). Launch behavior must also respect [Local inference and offline operation](local-and-offline.md) and repository defaults described in [Profiles](profiles.md).
-
-## Confirmed installation requirements
-
-- Automatically identify existing installations for every supported technology and reuse them. Never reinstall an existing component during setup or create a duplicate. See [Dependency detection and reuse](dependency-reuse.md).
-- Setup should obtain the required tools and selected models, rather than assume the user has already installed everything.
-- Install only components established to be absent, using the CLI where supported. Uncertain detection must leave installation pending rather than treating the component as missing.
-- Obtain the selected model through the supported runtime or model download mechanism, reusing an existing compatible artifact without downloading another copy. For example, an Ollama and Qwen profile needs access to both the runtime installation and the chosen Qwen model artifact.
-- When an absent component supports manual installation but has no supported CLI installation route, open its official installation or download page in the user's browser.
-- Keep setup pending while the user follows the installation instructions. Wait for explicit confirmation that the installation is complete before continuing with dependent setup steps.
-
-The browser fallback is part of the setup experience, not a separate task the user must discover independently. It does not imply support for a component that cannot run on the user's platform.
-
-## Proposed installation completion behavior for review
-
-- Show which component needs installation and what the user should do before returning to the CLI.
-- After a CLI installation or the user's confirmation of a manual installation, check that the component is available and usable before marking the step complete.
-- Treat browser opening, installer startup, and elapsed time as insufficient evidence of installation success.
-- If verification fails, explain what is still missing and allow retry or cancellation without marking the profile ready.
-- Continue profile setup after successful verification, reusing components that are already installed.
-- If a browser cannot be opened, display the official URL and instructions. Do not silently assume the manual step is complete.
-
-## Proposed setup behavior for review
-
-- Inspect the operating system, hardware, existing dependencies, and available model installations.
-- Let the user create one or more profiles and choose an agent and model.
-- Offer suitable model recommendations while allowing an explicit compatible selection.
-- Offer compatible context and memory settings, explaining their tradeoffs and any shared-runtime effects.
-- Explain required installations, configuration changes, and model downloads.
-- Preserve unrelated configuration while applying the required installation and model reuse rules.
-- Provide a clear explanation when an installation or hardware combination is unsupported.
-
-## Proposed launch behavior for review
-
-- Launch a named profile or the configured default from the current working directory.
-- Check that required dependencies, runtime access, and model artifacts are available.
-- Preserve the agent's interactive terminal behavior, cancellation, and exit status.
-- Forward arguments after `--` to the selected coding agent.
-- Keep profile settings scoped to the launched session where the integration supports this.
-- Offer diagnostics for missing dependencies, incompatible configuration, and runtime failures.
-
-## Illustrative CLI
-
-Command names and flags are proposals, not an approved interface or an implementation:
+## Implemented commands
 
 ```sh
-loc setup
-loc setup claude-next --agent claude --model qwen3-coder-next
-loc setup opencode-qwen --agent opencode --model qwen3.8
-loc profiles
-loc use claude-next
-loc run
-loc run opencode-qwen
-loc run claude-next -- --continue
-loc doctor
+loc scan
+loc models recommend --agent claude
+loc setup daily --model qwen3-coder:30b --dry-run
+loc setup daily --model qwen3-coder:30b
+loc setup daily --resume
+loc runtime start
+loc run daily
+loc run daily -- --continue
 ```
 
-The model strings above are illustrative. Exact artifacts and agent compatibility must be resolved later.
+New profiles default to Claude Code with local Ollama. Interactive setup asks for a profile and agent, then offers a fitting Qwen Coder model as the recommended choice. Model recommendations use the requested context and verified installed-model metadata. If no compatible Qwen Coder candidate has a positive memory-fit estimate, the model choice remains explicit. The example tag above is not suitable for every machine.
 
-## Limits and open decisions
+Noninteractive setup requires a profile name and exact `--model`; `--agent` overrides the Claude default. Existing profiles retain their selected agent/model when resumed. Dry runs inspect without installing, downloading, starting services, or writing profiles.
 
-- Installation methods, runtime startup behavior, and privilege handling vary across operating systems.
-- Supported CLI installation routes and official browser destinations must be established for each component and platform; no installer commands or URLs are selected in this documentation phase.
-- Browser fallback covers missing installation automation, not unsupported hardware or operating systems.
-- Shell aliases may be optional conveniences; their generation and existing alias migration remain undecided.
-- Agent-specific flags cannot be assumed interchangeable.
-- The first supported agent set and noninteractive setup behavior remain undecided. A manual installation step requires user action; how noninteractive runs report that requirement remains undecided.
-- The manager should preserve the selected agent's permission model; existing personal flags do not establish product defaults.
+Setup first discovers existing installations. It reuses working components, leaves ambiguous or damaged installations pending, and obtains only missing components. Official automated routes and manual browser fallback are listed in [Technology candidates](technology-candidates.md). Opening a browser is not success: the user must confirm completion and loc must find the executable.
+
+Setup preserves completed steps, rechecks actual state on every attempt, resumes through the runtime's download mechanism, and marks a profile ready only after model/context configuration succeeds. It does not overwrite a differently configured profile with the same name.
+
+## Model and runtime behavior
+
+Only local Ollama endpoints are accepted. Missing models are pulled explicitly; existing names are reused. Ollama shares existing content-addressed blobs during pulls and configuration creation. A deterministic configuration alias sets context and sampling without copying weights. Source and resolved digests are recorded.
+
+loc can start the existing Ollama executable when its service is unavailable. It never reinstalls a stopped service or restarts an unrelated running runtime. A loc-started service disables cloud features and limits concurrent/loaded models; these environment settings do not alter an existing shared service.
+
+## Launch behavior
+
+Each launch builds temporary agent configuration and a loopback inference gateway for the selected model. It rejects model/provider overrides in forwarded flags, strips conflicting inherited provider settings, preserves interactive I/O and exit status, and keeps persistent user configuration unchanged.
+
+Arguments after `--` go to the agent. Normal launches preserve the agent's permission model. The verification command allows the narrow disposable editing task described in [Diagnostics and recovery](diagnostics-and-recovery.md).
+
+A profile that is pending, disabled, missing a dependency, or pointing to a changed model cannot launch as ready. Optional `--rtk` requests helper reuse/installation and concise guidance; it does not globally install hooks.
+
+## Limits
+
+Windows/Linux native execution and fresh-machine installation routes still need validation. Unsupported major agent versions fail rather than guessing a schema. Native Windows dependencies such as Git Bash remain agent-specific. Existing personal aliases and scripts are not imported automatically. Full offline support has narrower boundaries than local inference; see [Local inference and offline operation](local-and-offline.md).
 
 ## Delivery evidence
 
-None. No commands, installers, launchers, or diagnostic checks exist yet.
+Live Claude Code, OpenCode 2, and Aider edits passed on the Mac. Setup idempotence, failure recovery, and previews are tested with isolated runtime and installer fixtures.

@@ -1,48 +1,42 @@
 # Maintenance
 
-State: not implemented
+State: partially implemented
 
-## Confirmed intent
-
-Maintain local coding-agent setups and update models when needed through simple commands.
-
-Users must also be able to install and update loc itself easily. Its proposed distribution and self-update behavior is documented separately in [Installing and updating loc](distribution-and-updates.md).
-
-The [no-duplicate installation requirement](dependency-reuse.md) also governs maintenance. A deliberate update must target the existing installation rather than add a second distribution. Retaining different model versions for rollback is distinct from copying an identical artifact for each profile.
-
-Storage visibility, ownership-aware cleanup, and explicit uninstallation are confirmed scope and are defined in [Uninstallation and storage](uninstall-and-storage.md). Update recovery and verification should align with [Diagnostics and recovery](diagnostics-and-recovery.md).
-
-## Proposed behavior for review
-
-- Report available changes before changing a working profile.
-- Distinguish an update to an existing model artifact from replacement with a different recommended model.
-- Allow an update to target a named profile and identify other affected profiles sharing dependencies.
-- Keep catalog refreshes, model updates, agent updates, and runtime updates distinguishable.
-- Preserve the prior configuration and required model artifacts until the replacement has been validated.
-- Rebuild derived model configurations when their base artifact changes.
-- Validate that an updated profile can load and work with its selected agent before activating it.
-- Provide rollback to a retained working profile configuration.
-- Report interrupted or failed updates without describing the profile as successfully updated.
-
-## Illustrative CLI
-
-These commands express proposed behavior only:
+## Model updates and rollback
 
 ```sh
-loc update --check
-loc update claude-next
-loc rollback claude-next
+loc update daily --check
+loc update daily --dry-run
+loc update daily
+loc rollback daily
 ```
 
-## Limits and open decisions
+Update checks compare an upstream Ollama manifest with the installed source, showing affected profiles and download estimates. A custom derived model's declared parent is used when available; unavailable upstream metadata leaves the operation pending.
 
-- An update may require additional disk space for both old and new model artifacts.
-- Recording an old artifact identifier does not guarantee rollback unless the artifact remains available.
-- Shared model and runtime changes must account for dependent profiles and active sessions.
-- Automatic deletion of models or replacement of active configurations is not an approved default.
-- Scheduled updates, ownership detection mechanisms, retention policy, and update-check behavior remain undecided. Ownership tracking and controlled cleanup are confirmed capabilities; their detailed commands and mechanisms remain open.
-- Exact version-pinning and rollback mechanisms depend on the selected runtime and remain undecided.
+Updates pull the selected source, retain the old resolved configuration alias, build a new alias with the profile's context/sampling settings, and verify a disposable edit before activating the replacement. Other profiles keep their resolved model references. Failed verification leaves the current profile active and downloaded artifacts available for inspection. Rollback checks that its retained artifact still exists with the expected digest before restoring it.
+
+Old/new versions can occupy additional disk space, although identical layers remain shared. There is no automatic model deletion after an update. Removing a profile or explicitly detaching a model can discard its rollback references.
+
+## Separate component and manager updates
+
+```sh
+loc update --component opencode --dry-run
+loc update --component opencode
+loc self update --check
+loc self update
+loc models refresh
+```
+
+Component updates use the detected installation owner, with no alternate-channel fallback. Active use blocks replacement. Some component owners do not provide a non-mutating version check; the preview reports availability as unknown and shows the route. Unsupported owners receive instructions rather than an invented updater.
+
+Catalog refresh changes recommendation metadata, not installed models or profiles. loc's own distribution lifecycle is covered in [Installing and updating loc](distribution-and-updates.md).
+
+## Limits
+
+Complex custom model recipes, changed templates, adapters, and cross-runtime migrations are not reconstructed automatically. Supported numeric sampling overrides survive profile updates; custom source artifacts may still require their original recipe. Source-tag updates are visible to external users of that tag, while loc profiles continue using retained resolved aliases.
+
+No background update scheduler or automatic installation is enabled. Check failures do not prevent running a working local profile. Native package replacement and recovery across Windows/Linux still require testing.
 
 ## Delivery evidence
 
-None. Update detection, replacement validation, and rollback are not implemented.
+Automated tests cover failed-update preservation, successful activation, retained references, rollback, and missing rollback artifacts. Real upstream model or agent updates were not applied to the user's existing environment during testing.
